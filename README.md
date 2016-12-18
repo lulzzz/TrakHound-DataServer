@@ -1,12 +1,12 @@
 ![Sniff](Sniff_50px.png)<br><br>
-Server application for TrakHound. Access MTConnect data using TrakHound to view processed manufacturing data from CNC equipment.
+Sniff is used to find and read MTConnect device data and send data as JSON (BSON) to TrakHound Data Servers for storage.
 
 # Configuration
 Configuration is read from an XML file in the following format:
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
-<DeviceServer>
+<Sniff>
   <Devices>
     <Device deviceId="1234" deviceName="VMC-3Axis">http://agent.mtconnect.org</Device>
     <Device deviceId="456" deviceName="OKUMA.Lathe">http://74.203.109.245:5001</Device>
@@ -20,7 +20,7 @@ Configuration is read from an XML file in the following format:
       </DataTypes>
     </DataServer>
   </DataServers>
-</DeviceServer>
+</Sniff>
 ```
 
 ## Device 
