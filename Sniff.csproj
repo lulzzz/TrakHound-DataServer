@@ -7,8 +7,8 @@
     <ProjectGuid>{A08323E8-AEE6-4E77-A014-567DEF401D4B}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TrakHound.DeviceServer</RootNamespace>
-    <AssemblyName>TrakHound-Device-Server</AssemblyName>
+    <RootNamespace>TrakHound.Sniff</RootNamespace>
+    <AssemblyName>Sniff</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
