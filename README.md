@@ -1,5 +1,5 @@
 ![Sniff](Sniff_50px.png)<br><br>
-Sniff is used to find and read MTConnect device data and send data as JSON (BSON) to TrakHound Data Servers for storage.
+Sniff is used to find and read MTConnect® device data and send data as JSON (BSON) to TrakHound Data Servers for storage. Sniff uses the TrakHound API to send data and is designed to be run on a machine front end or a central server.
 
 # Configuration
 Configuration is read from an XML file in the following format:
