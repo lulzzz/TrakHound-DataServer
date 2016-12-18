@@ -1,4 +1,4 @@
-![TrakHound Device Server](trakhound-device-server-logo.jpg)<br>
+![Sniff](Sniff_50px.png)<br>
 Server application for TrakHound. Access MTConnect data using TrakHound to view processed manufacturing data from CNC equipment.
 
 # Configuration
