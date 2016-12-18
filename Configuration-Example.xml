@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<DeviceServer>
+<Sniff>
   <Devices>
     <!--<Device deviceId="789456" deviceName="OKUMA.Lathe">http://localhost:5101</Device>-->
     <Device deviceId="1234" deviceName="VMC-3Axis">http://agent.mtconnect.org</Device>
@@ -15,4 +15,4 @@
       </DataTypes>
     </DataServer>
   </DataServers>
-</DeviceServer>
+</Sniff>

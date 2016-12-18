@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Threading;
 
-namespace TrakHound.DeviceServer
+namespace TrakHound.Sniff
 {
     public class DataServer
     {

@@ -8,7 +8,7 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TrakHound.DeviceServer
+namespace TrakHound.Sniff
 {
     public partial class Service : ServiceBase
     {

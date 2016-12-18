@@ -7,7 +7,7 @@ using System;
 using System.IO;
 using System.ServiceProcess;
 
-namespace TrakHound.DeviceServer
+namespace TrakHound.Sniff
 {
     static class Program
     {

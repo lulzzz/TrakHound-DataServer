@@ -10,9 +10,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Serialization;
-using CsvHelper;
 
-namespace TrakHound.DeviceServer
+namespace TrakHound.Sniff
 {
     public class Buffer
     {

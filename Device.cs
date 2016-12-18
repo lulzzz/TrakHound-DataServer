@@ -10,7 +10,7 @@ using System.Xml.Serialization;
 using MTConnectDevices = MTConnect.MTConnectDevices;
 using MTConnectStreams = MTConnect.MTConnectStreams;
 
-namespace TrakHound.DeviceServer
+namespace TrakHound.Sniff
 {
     public class Device
     {

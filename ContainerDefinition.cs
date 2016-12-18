@@ -7,7 +7,7 @@ using MTConnectDevices = MTConnect.MTConnectDevices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace TrakHound.DeviceServer
+namespace TrakHound.Sniff
 {
     public class ContainerDefinition
     {

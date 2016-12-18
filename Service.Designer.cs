@@ -1,4 +1,4 @@
-﻿namespace TrakHound.DeviceServer
+﻿namespace TrakHound.Sniff
 {
     partial class Service
     {

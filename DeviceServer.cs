@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 
-namespace TrakHound.DeviceServer
+namespace TrakHound.Sniff
 {
     public class DeviceServer
     {

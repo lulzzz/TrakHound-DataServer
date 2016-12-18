@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace TrakHound.DeviceServer
+namespace TrakHound.Sniff
 {
     public class DataType
     {

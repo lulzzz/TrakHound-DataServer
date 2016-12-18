@@ -9,9 +9,9 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace TrakHound.DeviceServer
+namespace TrakHound.Sniff
 {
-    [XmlRoot("DeviceServer")]
+    [XmlRoot("Sniff")]
     public class Configuration
     {
         [XmlArray("Devices")]
