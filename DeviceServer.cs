@@ -24,6 +24,12 @@ namespace TrakHound.DeviceServer
                     device.DataSamplesReceived += DataSamplesReceived;
                     device.Start();
                 }
+
+                // Start Data Servers
+                foreach (var dataServer in configuration.DataServers)
+                {
+                    dataServer.Start();
+                }
             }
         }
 

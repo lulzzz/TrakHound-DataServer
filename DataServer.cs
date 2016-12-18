@@ -4,14 +4,17 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using System.IO;
+using System.Threading;
 
 namespace TrakHound.DeviceServer
 {
     public class DataServer
     {
+        private ManualResetEvent sendStop;
+        private Thread sendThread;
+
         [XmlArray("DataTypes")]
         [XmlArrayItem("DataType", typeof(DataTypes))]
         public List<DataTypes> DataTypes { get; set; }
@@ -24,43 +27,73 @@ namespace TrakHound.DeviceServer
             set
             {
                 _url = value;
-                SetBufferDirectory();
+
+                if (Buffer != null) Buffer.Url = _url;
             }
         }
 
-        private string _bufferPath;
-        [XmlAttribute("bufferPath")]
-        public string BufferPath
+        [XmlAttribute("sendInterval")]
+        public int SendInterval { get; set; }
+
+        private Buffer _buffer;
+        [XmlElement("Buffer")]
+        public Buffer Buffer
         {
-            get { return _bufferPath; }
+            get { return _buffer; }
             set
             {
-                _bufferPath = value;
-                SetBufferDirectory();
+                _buffer = value;
+                if (_buffer != null) _buffer.Url = Url;
             }
         }
 
-        private void SetBufferDirectory()
-        {
-            string dir = "";
+        //private string _bufferPath;
+        //[XmlAttribute("bufferPath")]
+        //public string BufferPath
+        //{
+        //    get { return _bufferPath; }
+        //    set
+        //    {
+        //        _bufferPath = value;
+        //        SetBufferDirectory();
+        //    }
+        //}
 
-            if (!string.IsNullOrEmpty(BufferPath)) dir = BufferPath;
+        //private void SetBufferDirectory()
+        //{
+        //    string dir = "";
 
-            if (!string.IsNullOrEmpty(Url))
-            {
-                if (string.IsNullOrEmpty(dir)) dir = ConvertToFileName(Url);
-                else dir = Path.Combine(BufferPath, ConvertToFileName(Url));
-            }
+        //    if (!string.IsNullOrEmpty(BufferPath)) dir = BufferPath;
 
-            if (buffer != null) buffer.Directory = dir;
-            else buffer = new Buffer(dir);
-        }
+        //    if (!string.IsNullOrEmpty(Url))
+        //    {
+        //        if (string.IsNullOrEmpty(dir)) dir = ConvertToFileName(Url);
+        //        else dir = Path.Combine(BufferPath, ConvertToFileName(Url));
+        //    }
 
-        private Buffer buffer;
+        //    if (buffer != null) buffer.Directory = dir;
+        //    else buffer = new Buffer(dir);
+        //}
+
+        //private Buffer buffer;
 
         public DataServer()
         {
-            buffer = new Buffer();
+            SendInterval = 5000;
+            //Buffer = new Buffer();
+        }
+
+        public void Start()
+        {
+            sendStop = new ManualResetEvent(false);
+
+            sendThread = new Thread(new ThreadStart(SendWorker));
+            sendThread.Start();
+        }
+
+        public void Stop()
+        {
+            if (sendStop != null) sendStop.Set();
         }
 
         public void Add(List<DataSample> samples)
@@ -70,7 +103,7 @@ namespace TrakHound.DeviceServer
                 var type = DataType.Get(sample.Type);
                 if (DataTypes.Exists(o => o == type))
                 {
-                    buffer.Add(sample);
+                    if (Buffer != null) Buffer.Add(sample);
                 }
             }
         }
@@ -98,6 +131,16 @@ namespace TrakHound.DeviceServer
             //}
         }
 
+        private void SendWorker()
+        {
+            do
+            {
+                Buffer.ReadSamples(1000);
+
+            } while (!sendStop.WaitOne(SendInterval, true));
+        }
+
+
         public void SendSamples(List<DataSample> samples)
         {
             //foreach (var sample in samples)
@@ -114,22 +157,6 @@ namespace TrakHound.DeviceServer
         }
 
 
-        private static string ConvertToFileName(string url)
-        {
-            List<string> urlParts = new List<string>();
-            string rt = "";
-            var r = new Regex(@"[a-z]+", RegexOptions.IgnoreCase);
-            foreach (Match m in r.Matches(url))
-            {
-                urlParts.Add(m.Value);
-            }
-            int c = urlParts.Count;
-            for (int i = 0; i < c; i++)
-            {
-                rt = rt + urlParts[i];
-                if (i < c - 1) rt = rt + "_";
-            }
-            return rt;
-        }
+        
     }
 }

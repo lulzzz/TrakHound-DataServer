@@ -6,7 +6,8 @@
     <!--<Device deviceId="456" deviceName="OKUMA.Lathe">http://74.203.109.245:5001</Device>-->
   </Devices>
   <DataServers>
-    <DataServer url="http://localhost" bufferPath="c:\TrakHound\Buffers\">
+    <DataServer url="http://localhost">
+      <Buffer>c:\TrakHound\Buffers\</Buffer>
       <DataTypes>
         <DataType>POSITION</DataType>
         <DataType>STATUS</DataType>

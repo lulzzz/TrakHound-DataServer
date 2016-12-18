@@ -55,5 +55,28 @@ namespace TrakHound.DeviceServer
             string f = "{0},{1},{2},{3},{4}";
             return string.Format(f, DeviceId, Id, Value1, Value2, Timestamp.ToString("o"));
         }
+
+        public static DataSample FromCsv(string line)
+        {
+            var fields = line.Split(',');
+            if (fields != null && fields.Length == 5)
+            {
+                var sample = new DataSample();
+                sample.DeviceId = fields[0];
+                sample.Id = fields[1];
+                sample.Value1 = fields[2];
+                sample.Value2 = fields[3];
+
+                string t = fields[4];
+                DateTime timestamp;
+                if (DateTime.TryParse(t, out timestamp))
+                {
+                    sample.Timestamp = timestamp;
+                    return sample;
+                }
+            }
+
+            return null;
+        }
     }
 }
