@@ -1,12 +1,12 @@
 ![Sniff](Sniff_50px.png)<br><br>
-Sniff is used to find and read MTConnect® device data and send data as JSON (BSON) to TrakHound Data Servers for storage. Sniff uses the TrakHound API to send data and is designed to be run on a machine front end or a central server.
+Squirrel is used to find and read MTConnect® device data and send data as JSON (BSON) to TrakHound Data Servers for storage. Squirrel uses the TrakHound API to send data and is designed to be run on a machine front end or a central server. 
 
 # Configuration
 Configuration is read from an XML file in the following format:
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
-<Sniff>
+<Squirrel>
   <Devices>
     <Device deviceId="1234" deviceName="VMC-3Axis">http://agent.mtconnect.org</Device>
     <Device deviceId="456" deviceName="OKUMA.Lathe">http://74.203.109.245:5001</Device>
@@ -20,7 +20,7 @@ Configuration is read from an XML file in the following format:
       </DataTypes>
     </DataServer>
   </DataServers>
-</Sniff>
+</Squirrel>
 ```
 
 ## Device 
