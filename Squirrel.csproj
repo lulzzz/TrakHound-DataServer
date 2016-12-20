@@ -7,8 +7,8 @@
     <ProjectGuid>{A08323E8-AEE6-4E77-A014-567DEF401D4B}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TrakHound.Sniff</RootNamespace>
-    <AssemblyName>Sniff</AssemblyName>
+    <RootNamespace>TrakHound.Squirrel</RootNamespace>
+    <AssemblyName>Squirrel</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -77,7 +77,7 @@
     <Compile Include="DataTypes.cs" />
     <Compile Include="Delegates.cs" />
     <Compile Include="Device.cs" />
-    <Compile Include="DeviceServer.cs" />
+    <Compile Include="Server.cs" />
     <Compile Include="IDefinition.cs" />
     <Compile Include="Service.cs">
       <SubType>Component</SubType>

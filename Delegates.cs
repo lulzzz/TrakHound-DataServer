@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 
-namespace TrakHound.Sniff
+namespace TrakHound.Squirrel
 {
     public delegate void ContainerDefinitionsHandler(List<ContainerDefinition> definitions);
 

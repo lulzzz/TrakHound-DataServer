@@ -1,4 +1,4 @@
-﻿namespace TrakHound.Sniff
+﻿namespace TrakHound.Squirrel
 {
     partial class Service
     {

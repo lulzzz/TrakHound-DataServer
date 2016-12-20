@@ -5,13 +5,13 @@
 
 using System.Collections.Generic;
 
-namespace TrakHound.Sniff
+namespace TrakHound.Squirrel
 {
-    public class DeviceServer
+    public class Server
     {
         private Configuration configuration;
 
-        public DeviceServer(string configPath)
+        public Server(string configPath)
         {
             configuration = Configuration.Get(configPath);
             if (configuration != null)
@@ -35,24 +35,14 @@ namespace TrakHound.Sniff
 
         private void ContainerDefinitionsReceived(List<ContainerDefinition> definitions)
         {
-            //foreach (var dataServer in configuration.DataServers)
-            //{
-            //    dataServer.SendDefinitions(definitions);
-            //}
         }
 
         private void DataDefinitionsReceived(List<DataDefinition> definitions)
         {
-            //foreach (var dataServer in configuration.DataServers)
-            //{
-            //    dataServer.SendDefinitions(definitions);
-            //}
         }
 
         private void DataSamplesReceived(List<DataSample> samples)
         {
-            //foreach (var sample in samples) buffer.Add(sample);
-
             foreach (var dataServer in configuration.DataServers)
             {
                 dataServer.Add(samples);

@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Threading;
 
-namespace TrakHound.Sniff
+namespace TrakHound.Squirrel
 {
     public class DataServer
     {
@@ -47,40 +47,9 @@ namespace TrakHound.Sniff
             }
         }
 
-        //private string _bufferPath;
-        //[XmlAttribute("bufferPath")]
-        //public string BufferPath
-        //{
-        //    get { return _bufferPath; }
-        //    set
-        //    {
-        //        _bufferPath = value;
-        //        SetBufferDirectory();
-        //    }
-        //}
-
-        //private void SetBufferDirectory()
-        //{
-        //    string dir = "";
-
-        //    if (!string.IsNullOrEmpty(BufferPath)) dir = BufferPath;
-
-        //    if (!string.IsNullOrEmpty(Url))
-        //    {
-        //        if (string.IsNullOrEmpty(dir)) dir = ConvertToFileName(Url);
-        //        else dir = Path.Combine(BufferPath, ConvertToFileName(Url));
-        //    }
-
-        //    if (buffer != null) buffer.Directory = dir;
-        //    else buffer = new Buffer(dir);
-        //}
-
-        //private Buffer buffer;
-
         public DataServer()
         {
             SendInterval = 5000;
-            //Buffer = new Buffer();
         }
 
         public void Start()

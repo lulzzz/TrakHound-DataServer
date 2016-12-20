@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 
-namespace TrakHound.Sniff
+namespace TrakHound.Squirrel
 {
     public class DataSample
     {

@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Serialization;
 
-namespace TrakHound.Sniff
+namespace TrakHound.Squirrel
 {
     public class Buffer
     {
@@ -196,15 +196,20 @@ namespace TrakHound.Sniff
 
         public List<DataSample> ReadSamples(int maxRecords)
         {
-            int recordsRead = 0;
-            int records = 0;
+            int i = 0;
 
+            // Get list of Sample Buffer Files
             var sampleBuffers = System.IO.Directory.GetFiles(GetDirectory(), "samples*");
             if (sampleBuffers != null)
             {
+                var samples = new List<DataSample>();
+
+                // Read each Buffer file
                 foreach (var sampleBuffer in sampleBuffers)
                 {
-                    var samples = ReadSamples(sampleBuffer, 5000);
+                    var s = ReadSamples(sampleBuffer, 5000);
+                    i += s.Count;
+                    samples.AddRange(s);
                 }
             }
 
@@ -222,6 +227,8 @@ namespace TrakHound.Sniff
 
                 try
                 {
+                    var samples = new List<DataSample>();
+
                     using (var f = new FileStream(path, FileMode.Open, FileAccess.ReadWrite))
                     using (var reader = new StreamReader(f))
                     {
@@ -232,13 +239,8 @@ namespace TrakHound.Sniff
                             readRecords++;
 
                             var sample = DataSample.FromCsv(line);
-                            if (sample != null)
-                            {
-                                //Console.WriteLine(sample.ToCsv());
-                            }
+                            if (sample != null) samples.Add(sample);
                         }
-
-                        Console.WriteLine("readRecords = " + readRecords + " : maxRecords = " + maxRecords);
 
                         // Write unread records back to file
                         if (!reader.EndOfStream)
@@ -254,6 +256,8 @@ namespace TrakHound.Sniff
 
                     File.Delete(path);
                     if (overwrite) File.Move(tempFile, path);
+
+                    return samples;
                 }
                 catch (Exception ex)
                 {

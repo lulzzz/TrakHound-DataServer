@@ -7,7 +7,7 @@ using System;
 using System.IO;
 using System.ServiceProcess;
 
-namespace TrakHound.Sniff
+namespace TrakHound.Squirrel
 {
     static class Program
     {
@@ -42,7 +42,7 @@ namespace TrakHound.Sniff
         {
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration-Example.xml");
 
-            var deviceServer = new DeviceServer(configPath);
+            var deviceServer = new Server(configPath);
 
             Console.ReadLine();
         }

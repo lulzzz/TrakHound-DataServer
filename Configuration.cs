@@ -9,7 +9,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace TrakHound.Sniff
+namespace TrakHound.Squirrel
 {
     [XmlRoot("Sniff")]
     public class Configuration
