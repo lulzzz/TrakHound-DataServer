@@ -1,4 +1,4 @@
-![Sniff](Squirrel-Logo-01-75px.png)
+![Sniff](dataserver-logo-100px.png)
 <br>
 <br>
 Squirrel is used to find and read MTConnect® device data and send data as JSON (BSON) to TrakHound Data Servers for storage. Squirrel uses the TrakHound API to send data and is designed to be run on a machine front end or a central server. 
