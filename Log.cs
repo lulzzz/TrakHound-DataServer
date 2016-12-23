@@ -3,14 +3,15 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
-namespace TrakHound.Squirrel
+using System;
+
+namespace TrakHound.DataServer
 {
-    public interface IDefinition
+    public class Log
     {
-        string DeviceId { get; set; }
-
-        string Id { get; set; }
-
-        string Name { get; set; }
+        public static void Write(string line, object sender)
+        {
+            Console.WriteLine(line);
+        }
     }
 }

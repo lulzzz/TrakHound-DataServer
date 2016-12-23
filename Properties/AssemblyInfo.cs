@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Squirrel")]
+[assembly: AssemblyTitle("TrakHound DataServer")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Squirrel")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyCompany("TrakHound Inc.")]
+[assembly: AssemblyProduct("TrakHound DataServer")]
+[assembly: AssemblyCopyright("© 2017 TrakHound Inc., All Rights Reserved")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("a08323e8-aee6-4e77-a014-567def401d4b")]
+[assembly: Guid("4b8c5608-2e42-4b9d-b019-d6b50d33093b")]
 
 // Version information for an assembly consists of the following four values:
 //

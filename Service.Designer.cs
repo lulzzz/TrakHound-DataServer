@@ -1,4 +1,4 @@
-﻿namespace TrakHound.Squirrel
+﻿namespace TrakHound.DataServer
 {
     partial class Service
     {

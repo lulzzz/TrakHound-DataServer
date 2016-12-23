@@ -9,23 +9,30 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace TrakHound.Squirrel
+namespace TrakHound.DataServer
 {
-    [XmlRoot("Sniff")]
+    [XmlRoot("DataServer")]
     public class Configuration
     {
-        [XmlArray("Devices")]
-        [XmlArrayItem("Device", typeof(Device))]
-        public List<Device> Devices { get; set; }
+        [XmlElement("SslCertificatePath")]
+        public string SslCertificatePath { get; set; }
 
-        [XmlArray("DataServers")]
-        [XmlArrayItem("DataServer")]
-        public List<DataServer> DataServers { get; set; }
+        [XmlElement("SslCertificatePassword")]
+        public string SslCertificatePassword { get; set; }
+
+        [XmlElement("ClientConnectionTimeout")]
+        public int ClientConnectionTimeout { get; set; }
+
+        [XmlArray("EndPoints")]
+        [XmlArrayItem("EndPoint")]
+        public List<string> EndPoints { get; set; }
+
+        [XmlElement("MySql", typeof(Sql.MySqlConfiguration))]
+        public object Database { get; set; }
 
         public Configuration()
         {
-            Devices = new List<Device>();
-            DataServers = new List<DataServer>();
+            ClientConnectionTimeout = 30000; // 30 Seconds
         }
 
         public static Configuration Get(string path)

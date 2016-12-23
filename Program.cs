@@ -4,10 +4,9 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
-using System.IO;
 using System.ServiceProcess;
 
-namespace TrakHound.Squirrel
+namespace TrakHound.DataServer
 {
     static class Program
     {
@@ -15,11 +14,6 @@ namespace TrakHound.Squirrel
         /// The main entry point for the application.
         /// </summary>
         static void Main(string[] args)
-        {
-            Init(args);
-        }
-
-        private static void Init(string[] args)
         {
             if (args.Length > 0)
             {
@@ -40,12 +34,10 @@ namespace TrakHound.Squirrel
 
         private static void Debug(string[] args)
         {
-            var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configuration-Example.xml");
-
-            var deviceServer = new Server(configPath);
+            var server = new DataServer();
+            server.Start();
 
             Console.ReadLine();
         }
-
     }
 }
