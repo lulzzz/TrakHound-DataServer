@@ -19,8 +19,8 @@
 [Xx]86/
 [Bb]uild/
 bld/
-[Bb]in/
-[Oo]bj/
+src/[Bb]in/
+src/[Oo]bj/
 
 # Visual Studio 2015 cache/options directory
 .vs/
