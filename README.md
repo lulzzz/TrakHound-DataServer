@@ -1,14 +1,14 @@
-![Sniff](dataserver-logo-100px.png)
+![TrakHound DataServer](dataserver-logo-100px.png)
 <br>
 <br>
-Squirrel is used to find and read MTConnect® device data and send data as JSON (BSON) to TrakHound Data Servers for storage. Squirrel uses the TrakHound API to send data and is designed to be run on a machine front end or a central server. 
+TrakHound Data Server is used to receive MTConnect® data streamed from TrakHound Data Clients and store that data in a database. Supports SSL for secure connections and uses streaming to minimize connections. Currently supports MySQL databases.
 
 # Configuration
-Configuration is read from an XML file in the following format:
+Configuration is read from the **server.conf** XML file in the following format:
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
-<Squirrel>
+<DataServer>
   <Devices>
     <Device deviceId="1234" deviceName="VMC-3Axis">http://agent.mtconnect.org</Device>
     <Device deviceId="456" deviceName="OKUMA.Lathe">http://74.203.109.245:5001</Device>
@@ -22,7 +22,26 @@ Configuration is read from an XML file in the following format:
       </DataTypes>
     </DataServer>
   </DataServers>
-</Squirrel>
+</DataServer>
+```
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<DataClient>
+  <Devices>
+    <Device deviceId="1234" deviceName="VMC-3Axis">http://agent.mtconnect.org</Device>
+    <Device deviceId="456" deviceName="OKUMA.Lathe">http://74.203.109.245:5001</Device>
+  </Devices>
+  <DataServers>
+    <DataServer url="http://api.trakhound.com" bufferPath="c:\TrakHound\Buffers\">
+      <DataTypes>
+        <DataType>POSITION</DataType>
+        <DataType>STATUS</DataType>
+        <DataType>PROGRAM</DataType>
+      </DataTypes>
+    </DataServer>
+  </DataServers>
+</DataClient>
 ```
 
 ## Device 
