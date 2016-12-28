@@ -3,9 +3,11 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
@@ -13,13 +15,15 @@ using System.Text;
 using System.Threading;
 using TrakHound.Api.v2;
 
-namespace TrakHound.DataServer
+namespace TrakHound.DataServer.Streaming
 {
     /// <summary>
     /// Handles streams for new connections and adds received JSON data to SQL queue
     /// </summary>
     class StreamConnection
     {
+        private static Logger log = LogManager.GetCurrentClassLogger();
+
         private Stream stream = null;
         private ManualResetEvent stop;
 
@@ -28,6 +32,12 @@ namespace TrakHound.DataServer
         /// The TcpClient Connection used for streaming data
         /// </summary>
         public TcpClient Client { get { return _client; } }
+
+        private IPEndPoint _endPoint;
+        /// <summary>
+        /// Gets the Client Connection's initial RemoteEndPoint
+        /// </summary>
+        public IPEndPoint EndPoint { get { return _endPoint; } }
 
         /// <summary>
         /// Flag whether SSL is used for client connections. Read Only.
@@ -47,6 +57,7 @@ namespace TrakHound.DataServer
 
         public StreamConnection(ref TcpClient client, X509Certificate2 sslCertificate)
         {
+            _endPoint = ((IPEndPoint)client.Client.LocalEndPoint);
             _client = client;
             _sslCertificate = sslCertificate;
         }
@@ -56,7 +67,7 @@ namespace TrakHound.DataServer
             stop = new ManualResetEvent(false);
 
             GetStream();
-            if (stream == null) Log.Write("No Stream Found", this);
+            if (stream == null) log.Warn(EndPoint.ToString() + " : No Stream Found");
             else
             {
                 try
@@ -98,26 +109,26 @@ namespace TrakHound.DataServer
 
                             // Convert to Json and add to SqlQueue
                             var samples = Requests.FromJson<List<Samples.Sample>>(json);
-                            if (samples != null) DataServer.SqlQueue.Add(samples);
+                            if (samples != null) StreamingServer.SqlQueue.Add(samples);
 
                             b = s.IndexOf("[");
                             if (b >= 0) e = s.IndexOf("]", b);
                             else e = -1;
                         }
 
-                        // Send Success Byte
+                        // Send Success Byte. This is mainly used to say JSON was in correct format
                         var p = new byte[] { 101 };
                         stream.Write(p, 0, p.Length);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Write(ex.Message, this);
+                    //log.Error(ex);
                 }
                 finally
                 {
                     if (stream != null) stream.Close();
-                    Log.Write("Stream Closed", this);
+                    log.Info(EndPoint.ToString() + " : Stream Closed");
                 }
             }
         }
@@ -147,11 +158,11 @@ namespace TrakHound.DataServer
             }
             catch (System.Security.Authentication.AuthenticationException ex)
             {
-                Log.Write("Authentication failed - closing the connection.", this);
+                log.Error(ex, EndPoint.ToString() + " : Authentication failed - closing the connection.");
             }
             catch (Exception ex)
             {
-                Log.Write(ex.Message, this);
+                log.Error(ex);
             }
         }
 

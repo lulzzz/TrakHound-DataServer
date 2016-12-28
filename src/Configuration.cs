@@ -3,6 +3,7 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +15,11 @@ namespace TrakHound.DataServer
     [XmlRoot("DataServer")]
     public class Configuration
     {
+        private static Logger log = LogManager.GetCurrentClassLogger();
+
+        [XmlIgnore]
+        public const string FILENAME = "server.config";
+
         [XmlElement("SslCertificatePath")]
         public string SslCertificatePath { get; set; }
 
@@ -22,6 +28,16 @@ namespace TrakHound.DataServer
 
         [XmlElement("ClientConnectionTimeout")]
         public int ClientConnectionTimeout { get; set; }
+
+        [XmlElement("RestPort")]
+        public int RestPort { get; set; }
+
+        [XmlElement("StreamingPort")]
+        public int StreamingPort { get; set; }
+
+        [XmlArray("Prefixes")]
+        [XmlArrayItem("Prefix")]
+        public List<string> Prefixes { get; set; }
 
         [XmlArray("EndPoints")]
         [XmlArrayItem("EndPoint")]
@@ -50,9 +66,9 @@ namespace TrakHound.DataServer
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    log.Error(ex);
                 }
-            }           
+            }
 
             return null;
         }

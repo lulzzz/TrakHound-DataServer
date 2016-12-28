@@ -3,6 +3,7 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace TrakHound.DataServer.Sql
 {
     public class SqlQueue
     {
+        private static Logger log = LogManager.GetCurrentClassLogger();
+
         private object _lock = new object();
 
         public class DataSample : Samples.Sample
@@ -37,10 +40,13 @@ namespace TrakHound.DataServer.Sql
 
         public int Interval { get; set; }
 
+        public int MaxSamplePerQuery { get; set; }
+
 
         public SqlQueue()
         {
             Interval = 1000;
+            MaxSamplePerQuery = 2000;
 
             Start();
         }
@@ -75,12 +81,14 @@ namespace TrakHound.DataServer.Sql
             {
                 List<DataSample> samples = null;
 
-                lock (_lock) samples = queue.ToList();
+                lock (_lock) samples = queue.OrderBy(o => o.Timestamp).Take(MaxSamplePerQuery).ToList();
 
                 if (samples != null && samples.Count > 0)
                 {
                     if (WriteSql(samples))
                     {
+                        log.Info(samples.Count + " Samples Written to Database succesfully");
+
                         // Remove written samples
                         foreach (var sample in samples)
                         {

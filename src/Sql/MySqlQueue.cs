@@ -3,19 +3,17 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using TrakHound.Api.v2;
-
-using MySql.Data;
 using MySql.Data.MySqlClient;
+using NLog;
+using System;
+using System.Collections.Generic;
 
 namespace TrakHound.DataServer.Sql
 {
     public class MySqlQueue : SqlQueue
     {
         private readonly static DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static Logger log = LogManager.GetCurrentClassLogger();
 
         private const string COLUMNS = "`device_id`, `id`, `timestamp`, `value_1`, `value_2`";
         private const string QUERY_FORMAT = "INSERT IGNORE INTO `device_samples` ({0}) VALUES {1}";
@@ -30,12 +28,12 @@ namespace TrakHound.DataServer.Sql
             string f = "server={0};uid={1};pwd={2};database={3};";
             connectionString = string.Format(f, server, user, password, database);
 
-            Log.Write("MySql Database Configuration", this);
-            Log.Write("---------------------------", this);
-            Log.Write("Server = " + server, this);
-            Log.Write("User = " + user, this);
-            Log.Write("database = " + database, this);
-            Log.Write("---------------------------", this);
+            log.Info("MySql Database Configuration");
+            log.Info("---------------------------");
+            log.Info("Server = " + server);
+            log.Info("User = " + user);
+            log.Info("database = " + database);
+            log.Info("---------------------------");
         }
 
         private bool IsConnected()
@@ -48,7 +46,7 @@ namespace TrakHound.DataServer.Sql
                 }
                 catch (Exception ex)
                 {
-                    Log.Write(ex.Message, this);
+                    log.Error(ex);
                 }
             }
 
@@ -65,7 +63,7 @@ namespace TrakHound.DataServer.Sql
             }
             catch (MySqlException ex)
             {
-                Log.Write(ex.Message, this);
+                log.Error(ex);
             }
         }
 
@@ -80,7 +78,7 @@ namespace TrakHound.DataServer.Sql
                 }
                 catch (MySqlException ex)
                 {
-                    Log.Write(ex.Message, this);
+                    log.Error(ex);
                 }
             }
         }
@@ -107,8 +105,17 @@ namespace TrakHound.DataServer.Sql
             // Build Query
             string query = string.Format(QUERY_FORMAT, COLUMNS, values);
 
-            // Execute Query
-            return MySqlHelper.ExecuteNonQuery(connectionString, query, null) > 0;
+            try
+            {
+                // Execute Query
+                return MySqlHelper.ExecuteNonQuery(connectionString, query, null) > 0;
+            }
+            catch (MySqlException ex)
+            {
+                log.Error(ex);
+            }
+
+            return false;
         }
 
         public static long ToUnixTime(DateTime date)
