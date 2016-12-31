@@ -9,39 +9,32 @@ Configuration is read from the **server.conf** XML file in the following format:
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <DataServer>
-  <Devices>
-    <Device deviceId="1234" deviceName="VMC-3Axis">http://agent.mtconnect.org</Device>
-    <Device deviceId="456" deviceName="OKUMA.Lathe">http://74.203.109.245:5001</Device>
-  </Devices>
-  <DataServers>
-    <DataServer url="http://api.trakhound.com" bufferPath="c:\TrakHound\Buffers\">
-      <DataTypes>
-        <DataType>POSITION</DataType>
-        <DataType>STATUS</DataType>
-        <DataType>PROGRAM</DataType>
-      </DataTypes>
-    </DataServer>
-  </DataServers>
-</DataServer>
-```
+  
+  <!--Set Ports for Server Listening-->
+  <RestPort>80</RestPort>
+  <StreamingPort>8472</StreamingPort>
+  
+  <!--Set URL Prefixes for REST server-->
+  <Prefixes>
+    <Prefix>http://localhost/</Prefix>
+  </Prefixes>
 
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<DataClient>
-  <Devices>
-    <Device deviceId="1234" deviceName="VMC-3Axis">http://agent.mtconnect.org</Device>
-    <Device deviceId="456" deviceName="OKUMA.Lathe">http://74.203.109.245:5001</Device>
-  </Devices>
-  <DataServers>
-    <DataServer url="http://api.trakhound.com" bufferPath="c:\TrakHound\Buffers\">
-      <DataTypes>
-        <DataType>POSITION</DataType>
-        <DataType>STATUS</DataType>
-        <DataType>PROGRAM</DataType>
-      </DataTypes>
-    </DataServer>
-  </DataServers>
-</DataClient>
+  <!--SSL Configuration-->
+  <SslCertificatePath>C:\Users\Patrick\Documents\test-ssl-certificate\localhost.crt</SslCertificatePath>
+  <SslCertificatePassword>snaps</SslCertificatePassword>
+  
+  <!--Client Connection Inactivity Timeout (milliseconds)-->
+  <ClientConnectionTimeout>15000</ClientConnectionTimeout>
+  
+  <!--Allowed Client Endpoints that this server will accept connections from-->
+  <EndPoints>
+    <EndPoint>127.0.0.1</EndPoint> 
+  </EndPoints>
+
+  <!--Configure the MySQL database connection-->
+  <MySql server="192.168.1.13" user="development" password="trakhound" database="trakhound"></MySql>
+    
+</DataServer>
 ```
 
 ## Device 
