@@ -64,19 +64,18 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml" />
-    <Reference Include="TrakHound-API, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\TrakHound-API.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
-    <Compile Include="Data\IModule.cs" />
+    <Compile Include="Rest\IModule.cs" />
+    <Compile Include="Json.cs" />
     <Compile Include="Modules\Samples.cs" />
-    <Compile Include="Data\DataProcessor.cs" />
+    <Compile Include="Rest\Modules.cs" />
     <Compile Include="Rest\RestServer.cs" />
     <Compile Include="Sql\MySqlConfiguration.cs" />
+    <None Include="Sql\MySqlQuery.cs" />
     <Compile Include="Sql\MySqlQueue.cs" />
+    <None Include="Sql\SqlQuery.cs" />
     <Compile Include="Sql\SqlQueue.cs" />
     <Compile Include="Streaming\StreamingServer.cs" />
     <Compile Include="Service.cs">
@@ -99,7 +98,14 @@
     <None Include="packages.config" />
     <None Include="server.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\TrakHound-API\TrakHound-API\TrakHound-API\TrakHound-API.csproj">
+      <Project>{721bf90b-e72e-4fdf-bb06-3945e25e6dbc}</Project>
+      <Name>TrakHound-API</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -4,11 +4,11 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using NLog;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using TrakHound.Api.v2;
+using TrakHound.Api.v2.Streams.Data;
+using TrakHound.Api.v2.Streams;
 
 namespace TrakHound.DataServer.Sql
 {
@@ -18,22 +18,7 @@ namespace TrakHound.DataServer.Sql
 
         private object _lock = new object();
 
-        public class DataSample : Samples.Sample
-        {
-            public DataSample(Samples.Sample sample)
-            {
-                Uuid = Guid.NewGuid().ToString();
-                DeviceId = sample.DeviceId;
-                Id = sample.Id;
-                Timestamp = sample.Timestamp;
-                Value1 = sample.Value1;
-                Value2 = sample.Value2;
-            }
-
-            public string Uuid { get; set; }
-        }
-
-        private List<DataSample> queue = new List<DataSample>();
+        private List<IStreamData> queue = new List<IStreamData>();
 
         private ManualResetEvent stop;
         private Thread thread;
@@ -45,7 +30,7 @@ namespace TrakHound.DataServer.Sql
 
         public SqlQueue()
         {
-            Interval = 1000;
+            Interval = 200;
             MaxSamplePerQuery = 2000;
 
             Start();
@@ -64,13 +49,13 @@ namespace TrakHound.DataServer.Sql
             if (stop != null) stop.Set();
         }
 
-        public void Add(List<Samples.Sample> samples)
+        public void Add(List<IStreamData> data)
         {
-            if (samples != null && samples.Count > 0)
+            if (data != null && data.Count > 0)
             {
-                foreach (var sample in samples)
+                foreach (var item in data)
                 {
-                    lock (_lock) queue.Add(new DataSample(sample));
+                    lock (_lock) queue.Add(item);
                 }
             }
         }
@@ -79,20 +64,29 @@ namespace TrakHound.DataServer.Sql
         {
             do
             {
-                List<DataSample> samples = null;
+                List<IStreamData> streamData = null;
 
-                lock (_lock) samples = queue.OrderBy(o => o.Timestamp).Take(MaxSamplePerQuery).ToList();
+                lock (_lock) streamData = queue.Take(MaxSamplePerQuery).ToList();
 
-                if (samples != null && samples.Count > 0)
+                if (streamData != null && streamData.Count > 0)
                 {
-                    if (WriteSql(samples))
+                    var sentItems = new List<string>();
+
+                    // Write SQL
+                    sentItems.AddRange(WriteSql(streamData.OfType<AgentDefinitionData>().ToList()));
+                    sentItems.AddRange(WriteSql(streamData.OfType<DeviceDefinitionData>().ToList()));
+                    sentItems.AddRange(WriteSql(streamData.OfType<ComponentDefinitionData>().ToList()));
+                    sentItems.AddRange(WriteSql(streamData.OfType<DataItemDefinitionData>().ToList()));
+                    sentItems.AddRange(WriteSql(streamData.OfType<SampleData>().ToList()));
+
+                    if (sentItems.Count > 0)
                     {
-                        log.Info(samples.Count + " Samples Written to Database succesfully");
+                        log.Info(streamData.Count + " Items Written to Database successfully");
 
                         // Remove written samples
-                        foreach (var sample in samples)
+                        foreach (var item in streamData)
                         {
-                            lock (_lock) queue.RemoveAll(o => o.Uuid == sample.Uuid);
+                            lock (_lock) queue.RemoveAll(o => o.EntryId == item.EntryId);
                         }
                     }
                 }
@@ -100,10 +94,15 @@ namespace TrakHound.DataServer.Sql
             } while (!stop.WaitOne(Interval, true));
         }
 
-        public virtual bool WriteSql(List<DataSample> samples)
-        {
-            return true;
-        }
+        public virtual IEnumerable<string> WriteSql(List<AgentDefinitionData> definitions) { return Enumerable.Empty<string>(); }
+
+        public virtual IEnumerable<string> WriteSql(List<ComponentDefinitionData> definitions) { return Enumerable.Empty<string>(); }
+
+        public virtual IEnumerable<string> WriteSql(List<DataItemDefinitionData> definitions) { return Enumerable.Empty<string>(); }
+
+        public virtual IEnumerable<string> WriteSql(List<DeviceDefinitionData> definitions) { return Enumerable.Empty<string>(); }
+
+        public virtual IEnumerable<string> WriteSql(List<SampleData> samples) { return Enumerable.Empty<string>(); }
     }
 
 }

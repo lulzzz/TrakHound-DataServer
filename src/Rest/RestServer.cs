@@ -7,9 +7,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using System.Threading;
-using TrakHound.DataServer.Data;
 
 namespace TrakHound.DataServer.Rest
 {
@@ -21,14 +19,14 @@ namespace TrakHound.DataServer.Rest
         private Thread thread;
         private ManualResetEvent stop;
 
-        private List<IModule> modules;
-
         public List<string> Prefixes { get; set; }
 
         public RestServer(Configuration config)
         {
             Prefixes = config.Prefixes;
-            modules = DataProcessor.LoadModules();
+
+            // Load the REST Modules
+            Modules.Load();
         }
 
         public void Start()
@@ -83,38 +81,10 @@ namespace TrakHound.DataServer.Rest
                     {
                         var context = listener.GetContext();
 
+                        // Handle the request on a new thread
                         ThreadPool.QueueUserWorkItem((o) =>
                         {
-                            try
-                            {
-                                log.Info("Connected to : " + context.Request.LocalEndPoint.ToString());
-
-                                var requestUri = context.Request.Url;
-
-                                string response = DataProcessor.Get(requestUri, modules);
-                                if (!string.IsNullOrEmpty(response))
-                                {
-                                    log.Info(response);
-
-                                    var b = Encoding.UTF8.GetBytes(response);
-                                    context.Response.OutputStream.Write(b, 0, b.Length);
-                                }
-                                else
-                                {
-                                    context.Response.StatusCode = 400;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                context.Response.StatusCode = 500;
-                                log.Error(ex);
-                            }
-                            finally
-                            {
-                                context.Response.KeepAlive = false;
-                                context.Response.OutputStream.Close();
-                                context.Response.Close();
-                            }
+                            HandleRequest(context);
                         });
                     }
                 }
@@ -123,6 +93,41 @@ namespace TrakHound.DataServer.Rest
                     log.Error(ex);
                 }
             } while (!stop.WaitOne(1000, true));
+        }
+
+        private void HandleRequest(HttpListenerContext context)
+        {
+            try
+            {
+                log.Info("Connected to : " + context.Request.LocalEndPoint.ToString());
+
+                var uri = context.Request.Url;
+                using (var stream = context.Response.OutputStream)
+                {
+                    context.Response.StatusCode = 400;
+
+                    foreach (var module in Modules.LoadedModules)
+                    {
+                        var m = Modules.Get(module.GetType());
+                        if (m.GetResponse(uri, stream))
+                        {
+                            context.Response.StatusCode = 200;
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                context.Response.StatusCode = 500;
+                log.Error(ex);
+            }
+            finally
+            {
+                context.Response.OutputStream.Close();
+                context.Response.Close();
+                log.Info("Output Stream Closed : " + context.Request.LocalEndPoint.ToString());
+            }
         }
 
     }

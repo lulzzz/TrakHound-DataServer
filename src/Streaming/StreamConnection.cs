@@ -5,15 +5,14 @@
 
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
-using TrakHound.Api.v2;
 
 namespace TrakHound.DataServer.Streaming
 {
@@ -73,7 +72,7 @@ namespace TrakHound.DataServer.Streaming
                 try
                 {
                     int i;
-                    var bytes = new byte[1048576]; // 1 MB
+                    var bytes = new byte[100000]; // 100 KB
                     string s = "";
 
                     // Create & Start Timeout timer
@@ -107,10 +106,13 @@ namespace TrakHound.DataServer.Streaming
                             var json = s.Substring(b, e - b);
                             s = s.Remove(b, e - b);
 
-                            // Convert to Json and add to SqlQueue
-                            var samples = Requests.FromJson<List<Samples.Sample>>(json);
-                            if (samples != null) StreamingServer.SqlQueue.Add(samples);
+                            var data = Json.ReadStreamData(json);
+                            if (data != null)
+                            {
+                                StreamingServer.SqlQueue.Add(data.ToList());
+                            }
 
+                            // Read the next 
                             b = s.IndexOf("[");
                             if (b >= 0) e = s.IndexOf("]", b);
                             else e = -1;
@@ -121,9 +123,14 @@ namespace TrakHound.DataServer.Streaming
                         stream.Write(p, 0, p.Length);
                     }
                 }
+                catch (IOException ex)
+                {
+                    log.Info(EndPoint.ToString() + " : Connection Interrupted");
+                    log.Trace(ex);
+                }
                 catch (Exception ex)
                 {
-                    //log.Error(ex);
+                    log.Error(ex);
                 }
                 finally
                 {

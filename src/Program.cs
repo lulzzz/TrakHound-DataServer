@@ -52,8 +52,8 @@ namespace TrakHound.DataServer
                     log.Info("Configuration file read from '" + configPath + "'");
                     log.Info("---------------------------");
 
-                    //var streamingServer = new StreamingServer(config);
-                    //streamingServer.Start();
+                    var streamingServer = new StreamingServer(config);
+                    streamingServer.Start();
 
                     var restServer = new RestServer(config);
                     restServer.Start();

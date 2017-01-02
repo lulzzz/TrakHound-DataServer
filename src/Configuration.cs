@@ -17,6 +17,8 @@ namespace TrakHound.DataServer
     {
         private static Logger log = LogManager.GetCurrentClassLogger();
 
+        public static Configuration Current { get; set; }
+
         [XmlIgnore]
         public const string FILENAME = "server.config";
 
@@ -61,7 +63,9 @@ namespace TrakHound.DataServer
                     using (var fileReader = new FileStream(path, FileMode.Open))
                     using (var xmlReader = XmlReader.Create(fileReader))
                     {
-                        return (Configuration)serializer.Deserialize(xmlReader);
+                        var config = (Configuration)serializer.Deserialize(xmlReader);
+                        Current = config;
+                        return config;
                     }
                 }
                 catch (Exception ex)

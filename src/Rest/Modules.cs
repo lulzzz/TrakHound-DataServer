@@ -6,37 +6,25 @@
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.IO;
 using System.Reflection;
 
-namespace TrakHound.DataServer.Data
+namespace TrakHound.DataServer.Rest
 {
-    public class DataProcessor
+    public static class Modules
     {
         private static Logger log = LogManager.GetCurrentClassLogger();
 
-        public static string Get(string url, List<IModule> modules)
+        private static List<IModule> _modules = new List<IModule>();
+        public static ReadOnlyCollection<IModule> LoadedModules
         {
-            var uri = new Uri(url);
-            return Get(uri, modules);
+            get { return _modules.AsReadOnly(); }
         }
 
-        public static string Get(Uri uri, List<IModule> modules)
-        {
-            if (uri != null && modules != null && modules.Count > 0)
-            {
-                foreach (var module in modules)
-                {
-                    string response = module.GetResponse(uri);
-                    if (!string.IsNullOrEmpty(response)) return response;
-                }
-            }
-
-            return null;
-        }
-
-        public static List<IModule> LoadModules()
+        public static void Load()
         {
             var dir = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -47,8 +35,26 @@ namespace TrakHound.DataServer.Data
                 foreach (var module in modules) log.Info("Module Loaded : " + module.Name);
             }
 
-            return modules;
+            _modules.AddRange(modules);
         }
+
+        public static List<IModule> Get()
+        {
+            var l = new List<IModule>();
+
+            foreach (var module in _modules)
+            {
+                l.Add((IModule)Activator.CreateInstance(module.GetType()));
+            }
+
+            return l;
+        }
+
+        public static IModule Get(Type t)
+        {
+            return (IModule)Activator.CreateInstance(t);
+        }
+
 
         private class ModuleContainer
         {
@@ -60,7 +66,7 @@ namespace TrakHound.DataServer.Data
         {
             if (dir != null)
             {
-                if (System.IO.Directory.Exists(dir))
+                if (Directory.Exists(dir))
                 {
                     var catalog = new DirectoryCatalog(dir);
                     var container = new CompositionContainer(catalog);

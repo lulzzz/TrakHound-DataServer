@@ -4,8 +4,9 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
+using System.IO;
 
-namespace TrakHound.DataServer.Data
+namespace TrakHound.DataServer.Rest
 {
     public interface IModule
     {
@@ -17,6 +18,6 @@ namespace TrakHound.DataServer.Data
         /// <summary>
         /// Processes the requested Uri and returns the requested data
         /// </summary>
-        string GetResponse(Uri requestUri);
+        bool GetResponse(Uri requestUri, Stream stream);
     }
 }
