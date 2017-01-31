@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4B8C5608-2E42-4B9D-B019-D6B50D33093B}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TrakHound.DataServer</RootNamespace>
+    <AssemblyName>TrakHound-DataServer</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\TrakHound-Sniff\packages\Newtonsoft.Json.9.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>packages\NLog.4.4.1\lib\net40\NLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\TrakHound-Sniff\packages\RestSharp.105.2.3\lib\net4\RestSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Configuration.cs" />
+    <None Include="Database\IPlugin.cs" />
+    <Compile Include="Database.cs" />
+    <None Include="Modules\Activity\Activity.cs" />
+    <None Include="Modules\Activity\ActivityItem.cs" />
+    <None Include="Modules\Activity\EventItem.cs" />
+    <None Include="Modules\Activity\PathItem.cs" />
+    <None Include="Modules\Activity\RequestQuery.cs" />
+    <None Include="Modules\Model\ComponentItem.cs" />
+    <None Include="Modules\Model\DeviceItem.cs" />
+    <None Include="Modules\Model\RequestQuery.cs" />
+    <None Include="Modules\Model\Model.cs" />
+    <None Include="Modules\Oee\Availability.cs" />
+    <None Include="Modules\Oee\EventItem.cs" />
+    <None Include="Modules\Oee\Oee.cs" />
+    <None Include="Modules\Oee\Oee2.cs" />
+    <None Include="Modules\Oee\Performance.cs" />
+    <None Include="Modules\Oee\Quality.cs" />
+    <None Include="Modules\Oee\RequestQuery.cs" />
+    <None Include="Modules\Samples\Item.cs" />
+    <None Include="Modules\Status\ControllerItem.cs" />
+    <None Include="Modules\Status\DeviceItem.cs" />
+    <None Include="Modules\Status\PathItem.cs" />
+    <None Include="Modules\Status\RequestQuery.cs" />
+    <None Include="Modules\Status\Status.cs" />
+    <None Include="Modules\Status\StatusItem.cs" />
+    <None Include="Modules\Samples\RequestQuery.cs" />
+    <Compile Include="Rest\IModule.cs" />
+    <Compile Include="Json.cs" />
+    <None Include="Modules\Samples\Samples.cs" />
+    <Compile Include="Rest\Modules.cs" />
+    <Compile Include="Rest\RestServer.cs" />
+    <None Include="Database\Agent.cs" />
+    <None Include="Database\Components.cs" />
+    <None Include="Database\DataItems.cs" />
+    <None Include="Database\Device.cs" />
+    <None Include="Database\IConfiguration.cs" />
+    <None Include="Database\MySql\Agent.cs" />
+    <None Include="Database\MySql\Device.cs" />
+    <None Include="Database\MySql\Components.cs" />
+    <None Include="Database\MySql\DataItems.cs" />
+    <None Include="Database\MySql\MySqlConfiguration.cs" />
+    <None Include="events.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Database\MySqlQuery.cs" />
+    <None Include="Database\MySql\Initialize.cs" />
+    <None Include="Database\MySql\Instance.cs" />
+    <None Include="Database\MySql\Queue.cs" />
+    <None Include="Database\SqlQuery.cs" />
+    <None Include="Database\MySql\Samples.cs" />
+    <None Include="Database\Samples.cs" />
+    <Compile Include="DatabaseQueue.cs" />
+    <Compile Include="Streaming\ApiKey.cs" />
+    <Compile Include="Streaming\StreamingServer.cs" />
+    <Compile Include="DataServerService.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DataServerService.Designer.cs">
+      <DependentUpon>DataServerService.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Streaming\StreamConnection.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="NLOG.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
+    <None Include="server.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TrakHound-API\TrakHound-API\TrakHound-API\TrakHound-API.csproj">
+      <Project>{721bf90b-e72e-4fdf-bb06-3945e25e6dbc}</Project>
+      <Name>TrakHound-API</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
