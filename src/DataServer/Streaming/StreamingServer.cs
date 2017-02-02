@@ -12,7 +12,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
-using TrakHound.Api.v2;
 using TrakHound.Api.v2.Devices;
 using TrakHound.Api.v2.Streams;
 
@@ -64,6 +63,11 @@ namespace TrakHound.DataServer.Streaming
         public List<IPAddress> AllowedEndPoints { get; set; }
 
         /// <summary>
+        /// List of Denied Endpoint IP Addresses. If specified, any addresses in this list will be denied connection.
+        /// </summary>
+        public List<IPAddress> DeniedEndPoints { get; set; }
+
+        /// <summary>
         /// Connection Timeout in Milliseconds
         /// </summary>
         public int Timeout { get; set; }
@@ -106,15 +110,29 @@ namespace TrakHound.DataServer.Streaming
             // Set Port
             _port = config.StreamingPort;
 
-            // Load Allowed EndPoints
-            if (config.EndPoints != null && config.EndPoints.Count > 0)
+            // Load EndPoints Filter
+            if (config.EndPoints != null)
             {
-                AllowedEndPoints = new List<IPAddress>();
-
-                foreach (var endPoint in config.EndPoints)
+                // Allowed Endpoints
+                if (config.EndPoints.Allowed != null && config.EndPoints.Allowed.Length > 0)
                 {
-                    IPAddress ip;
-                    if (IPAddress.TryParse(endPoint, out ip)) AllowedEndPoints.Add(ip);
+                    AllowedEndPoints = new List<IPAddress>();
+                    foreach (var endPoint in config.EndPoints.Allowed)
+                    {
+                        IPAddress ip;
+                        if (IPAddress.TryParse(endPoint, out ip)) AllowedEndPoints.Add(ip);
+                    }
+                }
+
+                // Denied Endpoints
+                if (config.EndPoints.Denied != null && config.EndPoints.Denied.Length > 0)
+                {
+                    DeniedEndPoints = new List<IPAddress>();
+                    foreach (var endPoint in config.EndPoints.Denied)
+                    {
+                        IPAddress ip;
+                        if (IPAddress.TryParse(endPoint, out ip)) DeniedEndPoints.Add(ip);
+                    }
                 }
             }
         }
@@ -167,27 +185,15 @@ namespace TrakHound.DataServer.Streaming
                         // Perform a blocking call to accept requests.
                         var client = listener.AcceptTcpClient();
 
-                        bool allowed = false;
-
-                        // Check if address is allowed
-                        if (AllowedEndPoints != null && AllowedEndPoints.Count > 0)
+                        var endpoint = client.Client.RemoteEndPoint as IPEndPoint;
+                        if (!AllowEndPoint(endpoint))
                         {
-                            var ipEndpoint = client.Client.LocalEndPoint as IPEndPoint;
-                            if (ipEndpoint != null)
-                            {
-                                allowed = AllowedEndPoints.Exists(o => o.Equals(ipEndpoint.Address));
-                            }
-                        }
-                        else allowed = true;
-
-                        if (!allowed)
-                        {
-                            log.Info("Blocked from " + client.Client.LocalEndPoint.ToString());
+                            log.Info("Blocked from " + endpoint.ToString());
                             if (client != null) client.Close();
                         }
                         else
                         {
-                            log.Info("Connected to " + client.Client.LocalEndPoint.ToString());
+                            log.Info("Connected to " + endpoint.ToString());
 
                             // Start Processing Data on separate thread and continue to listen for subsequent requests
                             ThreadPool.QueueUserWorkItem((x) =>
@@ -218,9 +224,30 @@ namespace TrakHound.DataServer.Streaming
             }
         }
 
+        private bool AllowEndPoint(IPEndPoint endpoint)
+        {
+            if (endpoint != null && (AllowedEndPoints != null || DeniedEndPoints != null))
+            {
+                // Check if specifically allowed
+                if (AllowedEndPoints != null && AllowedEndPoints.Count > 0)
+                {
+                    return AllowedEndPoints.Exists(o => o.Address == endpoint.Address.Address);
+                }
+
+                // Check if specifically denied
+                if (DeniedEndPoints != null && DeniedEndPoints.Count > 0)
+                {
+                    return !DeniedEndPoints.Exists(o => o.Address == endpoint.Address.Address);
+                }
+            }
+            else return true;
+
+            return false;
+        }
+
         public static bool AddToQueue(IStreamData data)
         {
-            if (ValidateApiKey(data))
+            if (string.IsNullOrEmpty(Configuration.AuthenticationUrl) || ValidateApiKey(data))
             {
                 Queue.Add(data);
                 return true;
@@ -233,7 +260,7 @@ namespace TrakHound.DataServer.Streaming
         {
             foreach (var streamData in data)
             {
-                if (ValidateApiKey(streamData))
+                if (string.IsNullOrEmpty(Configuration.AuthenticationUrl) || ValidateApiKey(streamData))
                 {
                     Queue.Add(streamData);
                     return true;
