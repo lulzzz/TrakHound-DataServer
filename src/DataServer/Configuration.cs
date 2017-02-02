@@ -44,9 +44,12 @@ namespace TrakHound.DataServer
         [XmlArrayItem("Prefix")]
         public List<string> Prefixes { get; set; }
 
-        [XmlArray("EndPoints")]
-        [XmlArrayItem("EndPoint")]
-        public List<string> EndPoints { get; set; }
+        [XmlElement("EndPoints")]
+        public EndPointRange EndPoints { get; set; }
+
+        //[XmlArray("EndPoints")]
+        //[XmlArrayItem("EndPoint")]
+        //public List<string> EndPoints { get; set; }
 
         [XmlElement("DatabaseConfigurationPath")]
         public string DatabaseConfigurationPath { get; set; }
@@ -81,46 +84,5 @@ namespace TrakHound.DataServer
 
             return null;
         }
-
-        
-        //#region "Xml Serialization"
-
-        //public void WriteXml(XmlWriter writer)
-        //{
-        //    writer.WriteString("");
-        //}
-
-        //public void ReadXml(XmlReader reader)
-        //{
-        //    var xmlRoots = typeof(Configuration).GetCustomAttributes(typeof(XmlRootAttribute), true);
-        //    if (xmlRoots != null && xmlRoots.Length > 0)
-        //    {
-        //        var xmlRoot = (XmlRootAttribute)xmlRoots[0];
-        //        if (reader.Name == xmlRoot.ElementName)
-        //        {
-        //            logger.Info(reader.Name);
-
-        //            var inner = reader.ReadSubtree();
-        //            while (inner.Read())
-        //            {
-        //                if (inner.IsStartElement())
-        //                {
-        //                    var property = typeof(Configuration).GetProperties().ToList().Find(o => o.Name == inner.Name);
-        //                    if (property != null)
-        //                    {
-        //                        logger.Info(property.Name + " : " + property.PropertyType.ToString());
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
-
-        //public XmlSchema GetSchema()
-        //{
-        //    return (null);
-        //}
-
-        //#endregion
     }
 }
