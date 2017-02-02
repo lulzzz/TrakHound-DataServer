@@ -5,9 +5,11 @@
 
 using NLog;
 using System;
+using System.Configuration.Install;
 using System.IO;
 using System.Reflection;
 using System.ServiceProcess;
+using System.Threading;
 using TrakHound.DataServer.Streaming;
 using TrakHound.DataServer.Rest;
 
@@ -16,17 +18,58 @@ namespace TrakHound.DataServer
     static class Program
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static ManualResetEvent stop;
+        private static StreamingServer streamingServer;
+        private static RestServer restServer;
 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        static void Main(string[] args)
+        private static void Main(string[] args)
+        {
+            Init(args);
+        }
+
+        private static void Init(string[] args)
         {
             if (args.Length > 0)
             {
-                switch (args[0])
+                string runMode = args[0];
+
+                switch (runMode)
                 {
-                    case "debug": Run(args); break;
+                    // Debug (Run as console application)
+                    case "debug":
+
+                        if (args.Length > 1)
+                        {
+                            string serverMode = args[1];
+
+                            switch (serverMode)
+                            {
+                                case "streaming": Start(true, false); break;
+                                case "rest": Start(false, true); break;
+                                default: Start(); break;
+                            }
+                        }
+                        else Start();
+
+                        Console.ReadLine();
+                        Stop();
+                        Console.ReadLine();
+                        break;
+
+                    // Install the Service
+                    case "install":
+
+                        InstallService();
+                        break;
+
+                    // Uninstall the Service
+                    case "uninstall":
+
+                        UninstallService();
+                        break;
                 }
             }
             else
@@ -36,7 +79,7 @@ namespace TrakHound.DataServer
             }
         }
 
-        private static void Run(string[] args)
+        public static void Start(bool startStreaming = true, bool startRest = true)
         {
             try
             {
@@ -59,12 +102,18 @@ namespace TrakHound.DataServer
                     }
 
                     // Start the Sreaming Server (Upload)
-                    var streamingServer = new StreamingServer(config);
-                    streamingServer.Start();
+                    if (startStreaming)
+                    {
+                        streamingServer = new StreamingServer(config);
+                        streamingServer.Start();
+                    }
 
                     // Start the Rest Server (Download)
-                    var restServer = new RestServer(config);
-                    restServer.Start();
+                    if (startRest)
+                    {
+                        restServer = new RestServer(config);
+                        restServer.Start();
+                    }
                 }
                 else
                 {
@@ -78,10 +127,23 @@ namespace TrakHound.DataServer
             {
                 logger.Error(ex);
             }
-
-            Console.ReadLine();
         }
 
+        public static void Stop()
+        {
+            if (stop != null) stop.Set();
+        }
+
+        private static void InstallService()
+        {
+            ManagedInstallerClass.InstallHelper(new string[] { Assembly.GetExecutingAssembly().Location });
+        }
+
+        private static void UninstallService()
+        {
+            ManagedInstallerClass.InstallHelper(new string[] { "/u", Assembly.GetExecutingAssembly().Location });
+        }
+        
         private static void PrintHeader()
         {
             logger.Info("---------------------------");
