@@ -28,12 +28,13 @@ namespace TrakHound.DataServer
 
         public static bool Initialize(Configuration config)
         {
-            var path = config.DatabaseConfigurationPath;
+            var assemblyDir = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+            var path = Path.Combine(assemblyDir, config.DatabaseConfigurationPath);
             if (!string.IsNullOrEmpty(path))
             {
                 logger.Info("Reading Database Configuration File From '" + path + "'");
 
-                var modules = FindModules(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location));
+                var modules = FindModules(assemblyDir);
                 if (modules != null)
                 {
                     foreach (var module in modules)
