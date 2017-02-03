@@ -5,7 +5,6 @@
 
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -28,37 +27,18 @@ namespace TrakHound.DataServer
         [XmlElement("SslCertificatePassword")]
         public string SslCertificatePassword { get; set; }
 
-        [XmlElement("AuthenticationUrl")]
-        public string AuthenticationUrl { get; set; }
+        [XmlElement("Rest")]
+        public RestConfiguration RestConfiguration { get; set; }
 
-        [XmlElement("ClientConnectionTimeout")]
-        public int ClientConnectionTimeout { get; set; }
-
-        [XmlElement("RestPort")]
-        public int RestPort { get; set; }
-
-        [XmlElement("StreamingPort")]
-        public int StreamingPort { get; set; }
-
-        [XmlArray("Prefixes")]
-        [XmlArrayItem("Prefix")]
-        public List<string> Prefixes { get; set; }
+        [XmlElement("Streaming")]
+        public StreamingConfiguration StreamingConfiguration { get; set; }
 
         [XmlElement("EndPoints")]
         public EndPointRange EndPoints { get; set; }
 
-        //[XmlArray("EndPoints")]
-        //[XmlArrayItem("EndPoint")]
-        //public List<string> EndPoints { get; set; }
-
         [XmlElement("DatabaseConfigurationPath")]
         public string DatabaseConfigurationPath { get; set; }
 
-
-        public Configuration()
-        {
-            ClientConnectionTimeout = 30000; // 30 Seconds
-        }
 
         public static Configuration Get(string path)
         {
