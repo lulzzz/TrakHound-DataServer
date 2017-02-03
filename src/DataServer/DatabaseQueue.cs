@@ -109,13 +109,6 @@ namespace TrakHound.DataServer
                     var samples = streamData.OfType<SampleData>().ToList();
                     if (Database.Write(samples)) sentItems.AddRange(samples.Select(o => o.EntryId));
 
-
-                    //sentItems.AddRange(WriteSql(streamData.OfType<AgentDefinitionData>().ToList()));
-                    //sentItems.AddRange(WriteSql(streamData.OfType<DeviceDefinitionData>().ToList()));
-                    //sentItems.AddRange(WriteSql(streamData.OfType<ComponentDefinitionData>().ToList()));
-                    //sentItems.AddRange(WriteSql(streamData.OfType<DataItemDefinitionData>().ToList()));
-                    //sentItems.AddRange(WriteSql(streamData.OfType<SampleData>().ToList()));
-
                     if (sentItems.Count > 0)
                     {
                         log.Info(streamData.Count + " Items Written to Database successfully");
@@ -140,16 +133,6 @@ namespace TrakHound.DataServer
         public bool WriteSql(List<DeviceDefinitionData> definitions) { return Database.Write(definitions); }
            
         public bool WriteSql(List<SampleData> samples) { return Database.Write(samples); }
-
-        //public virtual IEnumerable<string> WriteSql(List<AgentDefinitionData> definitions) { return Enumerable.Empty<string>(); }
-
-        //public virtual IEnumerable<string> WriteSql(List<ComponentDefinitionData> definitions) { return Enumerable.Empty<string>(); }
-
-        //public virtual IEnumerable<string> WriteSql(List<DataItemDefinitionData> definitions) { return Enumerable.Empty<string>(); }
-
-        //public virtual IEnumerable<string> WriteSql(List<DeviceDefinitionData> definitions) { return Enumerable.Empty<string>(); }
-
-        //public virtual IEnumerable<string> WriteSql(List<SampleData> samples) { return Enumerable.Empty<string>(); }
     }
 
 }

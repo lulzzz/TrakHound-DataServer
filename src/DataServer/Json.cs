@@ -101,7 +101,6 @@ namespace TrakHound.DataServer
             }
             catch (Exception ex)
             {
-                Console.WriteLine(value);
                 log.Trace(ex);
             }
 
