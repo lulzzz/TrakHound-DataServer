@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("mod-db-mysql")]
+[assembly: AssemblyTitle("TrakHound DataServer MySQL DatabaseModule")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("mod-db-mysql")]
-[assembly: AssemblyCopyright("Copyright ©  2017")]
+[assembly: AssemblyCompany("TrakHound Inc.")]
+[assembly: AssemblyProduct("TrakHound DataServer MySQL DatabaseModule")]
+[assembly: AssemblyCopyright("© 2017 TrakHound Inc., All Rights Reserved")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

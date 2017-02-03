@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("mod-rest-model")]
+[assembly: AssemblyTitle("TrakHound DataServer Model RestModule")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("mod-rest-model")]
-[assembly: AssemblyCopyright("Copyright ©  2017")]
+[assembly: AssemblyCompany("TrakHound Inc.")]
+[assembly: AssemblyProduct("TrakHound DataServer Model RestModule")]
+[assembly: AssemblyCopyright("© 2017 TrakHound Inc., All Rights Reserved")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
