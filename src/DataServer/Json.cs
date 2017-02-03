@@ -15,7 +15,7 @@ using TrakHound.Api.v2.Streams.Data;
 
 namespace TrakHound.DataServer
 {
-    public static class Json
+    static class Json
     {
         private static Logger log = LogManager.GetCurrentClassLogger();
 

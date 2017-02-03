@@ -20,7 +20,7 @@ namespace TrakHound.DataServer.Streaming
     /// <summary>
     /// Streaming server that accepts multiple client connections and writes Samples to a database
     /// </summary>
-    class StreamingServer
+    internal class StreamingServer
     {
         private const int AUTHENTICATION_INTERVAL = 10000;
 

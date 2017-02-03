@@ -14,7 +14,7 @@ using System.Reflection;
 
 namespace TrakHound.DataServer.Rest
 {
-    public static class Modules
+    static class Modules
     {
         private static Logger log = LogManager.GetCurrentClassLogger();
 

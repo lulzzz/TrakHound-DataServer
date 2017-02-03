@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace TrakHound.DataServer.Rest
 {
-    public class RestServer
+    internal class RestServer
     {
         private static Logger log = LogManager.GetCurrentClassLogger();
 

@@ -74,60 +74,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
-    <None Include="Database\IPlugin.cs" />
     <Compile Include="Database.cs" />
-    <None Include="Modules\Activity\Activity.cs" />
-    <None Include="Modules\Activity\ActivityItem.cs" />
-    <None Include="Modules\Activity\EventItem.cs" />
-    <None Include="Modules\Activity\PathItem.cs" />
-    <None Include="Modules\Activity\RequestQuery.cs" />
-    <None Include="Modules\Model\ComponentItem.cs" />
-    <None Include="Modules\Model\DeviceItem.cs" />
-    <None Include="Modules\Model\RequestQuery.cs" />
-    <None Include="Modules\Model\Model.cs" />
-    <None Include="Modules\Oee\Availability.cs" />
-    <None Include="Modules\Oee\EventItem.cs" />
-    <None Include="Modules\Oee\Oee.cs" />
-    <None Include="Modules\Oee\Oee2.cs" />
-    <None Include="Modules\Oee\Performance.cs" />
-    <None Include="Modules\Oee\Quality.cs" />
-    <None Include="Modules\Oee\RequestQuery.cs" />
-    <None Include="Modules\Samples\Item.cs" />
-    <None Include="Modules\Status\ControllerItem.cs" />
-    <None Include="Modules\Status\DeviceItem.cs" />
-    <None Include="Modules\Status\PathItem.cs" />
-    <None Include="Modules\Status\RequestQuery.cs" />
-    <None Include="Modules\Status\Status.cs" />
-    <None Include="Modules\Status\StatusItem.cs" />
-    <None Include="Modules\Samples\RequestQuery.cs" />
     <Compile Include="EndPointRange.cs" />
     <Compile Include="Rest\RestConfiguration.cs" />
     <Compile Include="Rest\IModule.cs" />
     <Compile Include="Json.cs" />
-    <None Include="Modules\Samples\Samples.cs" />
     <Compile Include="Rest\Modules.cs" />
     <Compile Include="Rest\RestServer.cs" />
-    <None Include="Database\Agent.cs" />
-    <None Include="Database\Components.cs" />
-    <None Include="Database\DataItems.cs" />
-    <None Include="Database\Device.cs" />
-    <None Include="Database\IConfiguration.cs" />
-    <None Include="Database\MySql\Agent.cs" />
-    <None Include="Database\MySql\Device.cs" />
-    <None Include="Database\MySql\Components.cs" />
-    <None Include="Database\MySql\DataItems.cs" />
-    <None Include="Database\MySql\MySqlConfiguration.cs" />
     <None Include="events.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
-    <None Include="Database\MySqlQuery.cs" />
-    <None Include="Database\MySql\Initialize.cs" />
-    <None Include="Database\MySql\Instance.cs" />
-    <None Include="Database\MySql\Queue.cs" />
-    <None Include="Database\SqlQuery.cs" />
-    <None Include="Database\MySql\Samples.cs" />
-    <None Include="Database\Samples.cs" />
     <Compile Include="DatabaseQueue.cs" />
     <Compile Include="Streaming\StreamingConfiguration.cs" />
     <Compile Include="Streaming\ApiKey.cs" />
