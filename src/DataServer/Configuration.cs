@@ -28,10 +28,10 @@ namespace TrakHound.DataServer
         public string SslCertificatePassword { get; set; }
 
         [XmlElement("Rest")]
-        public RestConfiguration RestConfiguration { get; set; }
+        public RestConfiguration Rest { get; set; }
 
         [XmlElement("Streaming")]
-        public StreamingConfiguration StreamingConfiguration { get; set; }
+        public StreamingConfiguration Streaming { get; set; }
 
         [XmlElement("EndPoints")]
         public EndPointRange EndPoints { get; set; }

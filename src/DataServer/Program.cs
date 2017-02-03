@@ -41,19 +41,7 @@ namespace TrakHound.DataServer
                     // Debug (Run as console application)
                     case "debug":
 
-                        if (args.Length > 1)
-                        {
-                            string serverMode = args[1];
-
-                            switch (serverMode)
-                            {
-                                case "streaming": Start(true, false); break;
-                                case "rest": Start(false, true); break;
-                                default: Start(); break;
-                            }
-                        }
-                        else Start();
-
+                        Start();
                         Console.ReadLine();
                         Stop();
                         Console.ReadLine();
@@ -79,7 +67,7 @@ namespace TrakHound.DataServer
             }
         }
 
-        public static void Start(bool startStreaming = true, bool startRest = true)
+        public static void Start()
         {
             try
             {
@@ -102,14 +90,14 @@ namespace TrakHound.DataServer
                     }
 
                     // Start the Sreaming Server (Upload)
-                    if (startStreaming)
+                    if (config.Streaming != null)
                     {
                         streamingServer = new StreamingServer(config);
                         streamingServer.Start();
                     }
 
                     // Start the Rest Server (Download)
-                    if (startRest)
+                    if (config.Rest != null)
                     {
                         restServer = new RestServer(config);
                         restServer.Start();

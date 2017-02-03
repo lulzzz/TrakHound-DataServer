@@ -23,7 +23,7 @@ namespace TrakHound.DataServer.Rest
 
         public RestServer(Configuration config)
         {
-            Prefixes = config.Prefixes;
+            Prefixes = config.Rest.Prefixes;
 
             // Load the REST Modules
             Modules.Load();

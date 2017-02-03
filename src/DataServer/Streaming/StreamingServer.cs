@@ -105,10 +105,10 @@ namespace TrakHound.DataServer.Streaming
             }
 
             // Set Client Connection Timeout
-            Timeout = config.ClientConnectionTimeout;
+            Timeout = config.Streaming.ClientTimeout;
 
             // Set Port
-            _port = config.StreamingPort;
+            _port = config.Streaming.Port;
 
             // Load EndPoints Filter
             if (config.EndPoints != null)
@@ -144,7 +144,7 @@ namespace TrakHound.DataServer.Streaming
             stop = new ManualResetEvent(false);
 
             // Create authentication timer
-            if (!string.IsNullOrEmpty(Configuration.AuthenticationUrl))
+            if (!string.IsNullOrEmpty(Configuration.Streaming.AuthenticationUrl))
             {
                 authenticationTimer = new System.Timers.Timer();
                 authenticationTimer.Interval = AUTHENTICATION_INTERVAL;
@@ -247,7 +247,7 @@ namespace TrakHound.DataServer.Streaming
 
         public static bool AddToQueue(IStreamData data)
         {
-            if (string.IsNullOrEmpty(Configuration.AuthenticationUrl) || ValidateApiKey(data))
+            if (string.IsNullOrEmpty(Configuration.Streaming.AuthenticationUrl) || ValidateApiKey(data))
             {
                 Queue.Add(data);
                 return true;
@@ -260,7 +260,7 @@ namespace TrakHound.DataServer.Streaming
         {
             foreach (var streamData in data)
             {
-                if (string.IsNullOrEmpty(Configuration.AuthenticationUrl) || ValidateApiKey(streamData))
+                if (string.IsNullOrEmpty(Configuration.Streaming.AuthenticationUrl) || ValidateApiKey(streamData))
                 {
                     Queue.Add(streamData);
                     return true;
@@ -295,7 +295,7 @@ namespace TrakHound.DataServer.Streaming
                     if (key == null)
                     {
                         // Create new Device
-                        bool success = Device.Create(data.ApiKey, data.DeviceId, Configuration.AuthenticationUrl);
+                        bool success = Device.Create(data.ApiKey, data.DeviceId, Configuration.Streaming.AuthenticationUrl);
                         if (success)
                         {
                             // Add to Authenticated list
@@ -331,7 +331,7 @@ namespace TrakHound.DataServer.Streaming
                 foreach (var key in authenticatedKeys)
                 {
                     // Create new Device
-                    bool success = Device.Create(key.Key, key.DeviceId, Configuration.AuthenticationUrl);
+                    bool success = Device.Create(key.Key, key.DeviceId, Configuration.Streaming.AuthenticationUrl);
                     if (!success)
                     {
                         lock (_lock)
@@ -350,7 +350,7 @@ namespace TrakHound.DataServer.Streaming
                 foreach (var key in unauthenticatedKeys)
                 {
                     // Create new Device
-                    bool success = Device.Create(key.Key, key.DeviceId, Configuration.AuthenticationUrl);
+                    bool success = Device.Create(key.Key, key.DeviceId, Configuration.Streaming.AuthenticationUrl);
                     if (success)
                     {
                         lock (_lock)
