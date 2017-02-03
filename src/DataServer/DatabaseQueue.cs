@@ -7,8 +7,9 @@ using NLog;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using TrakHound.Api.v2.Streams.Data;
+using TrakHound.Api.v2;
 using TrakHound.Api.v2.Streams;
+using TrakHound.Api.v2.Streams.Data;
 
 namespace TrakHound.DataServer
 {

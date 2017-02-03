@@ -10,6 +10,7 @@ using System.IO;
 using System.Reflection;
 using System.ServiceProcess;
 using System.Threading;
+using TrakHound.Api.v2;
 using TrakHound.DataServer.Streaming;
 using TrakHound.DataServer.Rest;
 
@@ -81,7 +82,7 @@ namespace TrakHound.DataServer
                     logger.Info("---------------------------");
 
                     // Initialize the Database Configuration
-                    if (!Database.Initialize(config))
+                    if (!Database.Initialize(config.DatabaseConfigurationPath))
                     {
                         // Throw exception that no configuration file was found
                         var ex = new Exception("No Database Configuration File Found. Exiting TrakHound-DataServer!");
