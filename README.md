@@ -35,65 +35,6 @@ Each TrakHound DataClient can also filter data to only send specific data to cer
 Of course, the biggest security benefit to using TrakHound is that it is Open Source and the source code can be reviewed to insure exactly what data is being collected and to make sure that no other data is being sent anywhere it shouldn't be.
 
 
-# Server Configuration
-Configuration for the DataServer is read from the **server.config** XML file in the following format:
 
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<DataServer>
-  
-  <!--REST Server Configuration-->
-  <Rest port="80">
-
-    <!--Set URL Prefixes to listen on-->
-    <Prefixes>
-      <Prefix>http://192.168.1.9/</Prefix>
-    </Prefixes>
-
-  </Rest>
-
-  <!--Streaming Server Configuration-->
-  <Streaming port="8472" clientTimeout="15000"/>
-
-  <!--SSL Configuration-->
-  <SslCertificatePath>C:\Users\Demo\Documents\certificate.pfx</SslCertificatePath>
-  <SslCertificatePassword>pwd</SslCertificatePassword>
-
-  
-  <!--Client Endpoints that this server will accept or deny connections from-->
-  <EndPoints>
-    <Allow>
-      <EndPoint>192.168.1.10</EndPoint>
-      <EndPoint>192.168.1.11</EndPoint>
-      <EndPoint>192.168.1.13</EndPoint>
-    </Allow>
-    <Deny>
-      <EndPoint>192.168.1.12</EndPoint>
-    </Deny>
-  </EndPoints>
-    
-  <!--Define the path to the database configuration file-->
-  <DatabaseConfigurationPath>mysql.config</DatabaseConfigurationPath>
-    
-</DataServer>
-```
-
-## Rest 
-Configuration for the REST Api server.
-
-#### Port
-###### *(XmlAttribute : port)*
-The port to listen for incoming REST Api requests on
-
-#### Prefixes
-The URL prefixes to listen for incoming REST Api requests on
-
-
-## Streaming 
-Configuration for the Streaming data server.
-
-#### Port
-###### *(XmlAttribute : port)*
-The port to listen for incoming streaming requests on
 
 
