@@ -35,63 +35,65 @@ Each TrakHound DataClient can also filter data to only send specific data to cer
 Of course, the biggest security benefit to using TrakHound is that it is Open Source and the source code can be reviewed to insure exactly what data is being collected and to make sure that no other data is being sent anywhere it shouldn't be.
 
 
-# Configuration
-Configuration is read from the **server.conf** XML file in the following format:
+# Server Configuration
+Configuration for the DataServer is read from the **server.config** XML file in the following format:
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <DataServer>
   
-  <!--Set Ports for Server Listening-->
-  <RestPort>80</RestPort>
-  <StreamingPort>8472</StreamingPort>
-  
-  <!--Set URL Prefixes for REST server-->
-  <Prefixes>
-    <Prefix>http://localhost/</Prefix>
-  </Prefixes>
+  <!--REST Server Configuration-->
+  <Rest port="80">
+
+    <!--Set URL Prefixes to listen on-->
+    <Prefixes>
+      <Prefix>http://192.168.1.9/</Prefix>
+    </Prefixes>
+
+  </Rest>
+
+  <!--Streaming Server Configuration-->
+  <Streaming port="8472" clientTimeout="15000"/>
 
   <!--SSL Configuration-->
-  <SslCertificatePath>C:\Users\Patrick\Documents\test-ssl-certificate\localhost.crt</SslCertificatePath>
-  <SslCertificatePassword>snaps</SslCertificatePassword>
-  
-  <!--Client Connection Inactivity Timeout (milliseconds)-->
-  <ClientConnectionTimeout>15000</ClientConnectionTimeout>
-  
-  <!--Allowed Client Endpoints that this server will accept connections from-->
-  <EndPoints>
-    <EndPoint>127.0.0.1</EndPoint> 
-  </EndPoints>
+  <SslCertificatePath>C:\Users\Demo\Documents\certificate.pfx</SslCertificatePath>
+  <SslCertificatePassword>pwd</SslCertificatePassword>
 
-  <!--Configure the MySQL database connection-->
-  <MySql server="192.168.1.13" user="development" password="trakhound" database="trakhound"></MySql>
+  
+  <!--Client Endpoints that this server will accept or deny connections from-->
+  <EndPoints>
+    <Allow>
+      <EndPoint>192.168.1.10</EndPoint>
+      <EndPoint>192.168.1.11</EndPoint>
+      <EndPoint>192.168.1.13</EndPoint>
+    </Allow>
+    <Deny>
+      <EndPoint>192.168.1.12</EndPoint>
+    </Deny>
+  </EndPoints>
+    
+  <!--Define the path to the database configuration file-->
+  <DatabaseConfigurationPath>mysql.config</DatabaseConfigurationPath>
     
 </DataServer>
 ```
 
-## Device 
-Represents each MTConnect Agent that the Device Server going to be reading from.
+## Rest 
+Configuration for the REST Api server.
 
-#### Device ID 
-###### *(XmlAttribute : deviceId)*
-The globally unique identifier for the device (usually a GUID)
+#### Port
+###### *(XmlAttribute : port)*
+The port to listen for incoming REST Api requests on
 
-#### Device Name
-###### *(XmlAttribute : deviceName)*
-The DeviceName of the MTConnect Device to read from
+#### Prefixes
+The URL prefixes to listen for incoming REST Api requests on
 
-#### Address
-###### *(XmlText)*
-The base Url of the MTConnect Agent. Do not specify the Device Name in the url, instead specify it under the deviceName attribute.
 
-## Data Server
-Represents each TrakHound Data Server that data is sent to in order to be strored and processed.
+## Streaming 
+Configuration for the Streaming data server.
 
-#### Url 
-###### *(XmlAttribute : url)*
-The base Url of the TrakHound Data Server to send data to
+#### Port
+###### *(XmlAttribute : port)*
+The port to listen for incoming streaming requests on
 
-#### Buffer Path
-###### *(XmlAttribute : bufferPath)*
-The directory where the buffer files should be stored. The Buffer is used to store data that hasn't been successfully sent yet.
 
