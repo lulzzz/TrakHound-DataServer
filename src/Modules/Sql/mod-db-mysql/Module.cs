@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Text.RegularExpressions;
 using TrakHound.Api.v2;
 using TrakHound.Api.v2.Data;
 using TrakHound.Api.v2.Streams;
@@ -47,34 +48,295 @@ namespace mod_db_mysql
 
         #region "Read"
 
+        private static T Read<T>(string query)
+        {
+            if (!string.IsNullOrEmpty(query))
+            {
+                try
+                {
+                    using (var reader = MySqlHelper.ExecuteReader(connectionString, query))
+                    {
+                        reader.Read();
+                        return Read<T>(reader);
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    logger.Error(ex);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+                }
+            }
+
+            return default(T);
+        }
+
+        private static List<T> ReadList<T>(string query)
+        {
+            if (!string.IsNullOrEmpty(query))
+            {
+                try
+                {
+                    var list = new List<T>();
+
+                    using (var reader = MySqlHelper.ExecuteReader(connectionString, query))
+                    {
+                        while(reader.Read())
+                        {
+                            list.Add(Read<T>(reader));
+                        }
+                    }
+
+                    return list;
+                }
+                catch (MySqlException ex)
+                {
+                    logger.Error(ex);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+                }
+            }
+
+            return null;
+        }
+
+        private static T Read<T>(MySqlDataReader reader)
+        {
+            var obj = (T)Activator.CreateInstance(typeof(T));
+
+            // Get object's properties
+            var properties = typeof(T).GetProperties().ToList();
+
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                var column = reader.GetName(i);
+                var value = reader.GetValue(i);
+
+                var property = properties.Find(o => PropertyToColumn(o.Name) == column);
+                if (property != null && value != null)
+                {
+                    object val = default(T);
+
+                    if (property.PropertyType == typeof(string))
+                    {
+                        string s = value.ToString();
+                        if (!string.IsNullOrEmpty(s)) val = s;
+                    }
+                    else if (property.PropertyType == typeof(DateTime))
+                    {
+                        long ms = (long)value;
+                        val = UnixTimeExtensions.EpochTime.AddMilliseconds(ms);
+                    }
+                    else
+                    {
+                        val = Convert.ChangeType(value, property.PropertyType);
+                    }
+
+                    property.SetValue(obj, val, null);
+                }
+            }
+
+            return obj;
+        }
+
+        private static string PropertyToColumn(string propertyName)
+        {
+            if (propertyName != propertyName.ToUpper())
+            {
+                // Split string by Uppercase characters
+                var parts = Regex.Split(propertyName, @"(?<!^)(?=[A-Z])");
+                string s = string.Join("_", parts);
+                return s.ToLower();
+            }
+            else return propertyName.ToLower();
+        }
+
         /// <summary>
         /// Read the most current AgentDefintion from the database
         /// </summary>
-        public AgentDefinition ReadAgent(string deviceId) { return null; }
+        public AgentDefinition ReadAgent(string deviceId)
+        {
+            string qf = "SELECT * FROM `agents` WHERE `device_id` = '{0}' ORDER BY `timestamp` DESC LIMIT 1";
+            string query = string.Format(qf, deviceId);
+
+            return Read<AgentDefinition>(query);
+        }
 
         /// <summary>
         /// Read the ComponentDefinitions for the specified Agent Instance Id from the database
         /// </summary>
-        public List<ComponentDefinition> ReadComponents(string deviceId, long agentInstanceId) { return null; }
+        public List<ComponentDefinition> ReadComponents(string deviceId, long agentInstanceId)
+        {
+            string qf = "SELECT * FROM `components` WHERE `device_id` = '{0}' AND `agent_instance_id` = {1}";
+            string query = string.Format(qf, deviceId, agentInstanceId);
+
+            return ReadList<ComponentDefinition>(query);
+        }
+
+        /// <summary>
+        /// Read the most ConnectionDefintion from the database
+        /// </summary>
+        public ConnectionDefinition ReadConnection(string deviceId)
+        {
+            string qf = "SELECT * FROM `connections` WHERE `device_id` = '{0}' LIMIT 1";
+            string query = string.Format(qf, deviceId);
+
+            return Read<ConnectionDefinition>(query);
+        }
 
         /// <summary>
         /// Read the DataItemDefinitions for the specified Agent Instance Id from the database
         /// </summary>
-        public List<DataItemDefinition> ReadDataItems(string deviceId, long agentInstanceId) { return null; }
+        public List<DataItemDefinition> ReadDataItems(string deviceId, long agentInstanceId)
+        {
+            string qf = "SELECT * FROM `data_items` WHERE `device_id` = '{0}' AND `agent_instance_id` = {1}";
+            string query = string.Format(qf, deviceId, agentInstanceId);
+
+            return ReadList<DataItemDefinition>(query);
+        }
 
         /// <summary>
         /// Read the DeviceDefintion for the specified Agent Instance Id from the database
         /// </summary>
-        public DeviceDefinition ReadDevice(string deviceId, long agentInstanceId) { return null; }
+        public DeviceDefinition ReadDevice(string deviceId, long agentInstanceId)
+        {
+            string qf = "SELECT * FROM `devices` WHERE `device_id` = '{0}'  AND `agent_instance_id` = {1} LIMIT 1";
+            string query = string.Format(qf, deviceId, agentInstanceId);
+
+            return Read<DeviceDefinition>(query);
+        }
 
         /// <summary>
         /// Read Samples from the database
         /// </summary>
-        public List<Sample> ReadSamples(string[] dataItemIds, string deviceId, DateTime from, DateTime to, DateTime at, long count) { return null; }
+        public List<Sample> ReadSamples(string[] dataItemIds, string deviceId, DateTime from, DateTime to, DateTime at, long count)
+        {
+            var samples = new List<Sample>();
+
+            string COLUMNS = "`device_id`,`id`,`timestamp`,`sequence`,`cdata`,`condition`";
+            string TABLENAME_ARCHIVED = "archived_samples";
+            string TABLENAME_CURRENT = "current_samples";
+            string INSTANCE_FORMAT = "CALL getInstance('{0}', {1})";
+
+            string dataItemFilter = "";
+
+            if (dataItemIds != null && dataItemIds.Length > 0)
+            {
+                for (int i = 0; i < dataItemIds.Length; i++)
+                {
+                    dataItemFilter += "`id`='" + dataItemIds[i] + "'";
+                    if (i < dataItemIds.Length - 1) dataItemFilter += " OR ";
+                }
+
+                dataItemFilter = string.Format("({0}) AND ", dataItemFilter);
+            }
+
+            var queries = new List<string>();
+
+            // Create query
+            if (from > DateTime.MinValue && to > DateTime.MinValue)
+            {
+                queries.Add(string.Format(INSTANCE_FORMAT, deviceId, from.ToUnixTime()));
+
+                string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}' AND `timestamp` >= '{4}' AND `timestamp` <= '{5}'";
+                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, from.ToUnixTime(), to.ToUnixTime()));
+            }
+            else if (from > DateTime.MinValue && count > 0)
+            {
+                queries.Add(string.Format(INSTANCE_FORMAT, deviceId, from.ToUnixTime()));
+
+                string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}' AND `timestamp` >= '{4}' LIMIT {5}";
+                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, from.ToUnixTime(), count));
+            }
+            else if (to > DateTime.MinValue && count > 0)
+            {
+                queries.Add(string.Format(INSTANCE_FORMAT, deviceId, to.ToUnixTime()));
+
+                string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}' AND `timestamp` <= '{4}' LIMIT {5}";
+                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, to.ToUnixTime(), count));
+            }
+            else if (from > DateTime.MinValue)
+            {
+                queries.Add(string.Format(INSTANCE_FORMAT, deviceId, from.ToUnixTime()));
+
+                string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}' AND `timestamp` <= '{4}' LIMIT 1000";
+                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, from.ToUnixTime()));
+            }
+            else if (to > DateTime.MinValue)
+            {
+                queries.Add(string.Format(INSTANCE_FORMAT, deviceId, to.ToUnixTime()));
+
+                string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}' AND `timestamp` <= '{4}' LIMIT 1000";
+                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, to.ToUnixTime()));
+            }
+            else if (count > 0)
+            {
+                string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}' ORDER BY `timestamp` DESC LIMIT {4}";
+                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, count));
+            }
+            else if (at > DateTime.MinValue)
+            {
+                queries.Add(string.Format(INSTANCE_FORMAT, deviceId, at.ToUnixTime()));
+            }
+            else
+            {
+                string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}'";
+                queries.Add(string.Format(qf, COLUMNS, TABLENAME_CURRENT, dataItemFilter, deviceId, at.ToUnixTime()));
+            }
+
+            foreach (var query in queries) samples.AddRange(ReadList<Sample>(query));
+
+            return samples;
+        }
 
         #endregion
 
         #region "Write"
+
+        private bool Write(string query)
+        {
+            try
+            {
+                return MySqlHelper.ExecuteNonQuery(connectionString, query, null) >= 0;
+            }
+            catch (MySqlException ex) { logger.Error(ex); }
+            catch (Exception ex) { logger.Error(ex); }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Write ConnectionDefintions to the database
+        /// </summary>
+        public bool Write(List<ConnectionDefinitionData> definitions)
+        {
+            if (!definitions.IsNullOrEmpty())
+            {
+                string COLUMNS = "`device_id`, `address`, `port`, `physical_address`";
+                string QUERY_FORMAT = "INSERT INTO `connections` ({0}) VALUES {1} ON DUPLICATE KEY UPDATE `address`=VALUES(`address`), `port`=VALUES(`port`), `physical_address`=VALUES(`physical_address`)";
+                string VALUE_FORMAT = "('{0}','{1}',{2},'{3}')";
+
+                // Build VALUES string
+                var v = new string[definitions.Count];
+                for (var i = 0; i < definitions.Count; i++)
+                {
+                    var d = definitions[i];
+                    v[i] = string.Format(VALUE_FORMAT, d.DeviceId, d.Address, d.Port, d.PhysicalAddress);
+                }
+                string values = string.Join(",", v);
+
+                // Build Query string
+                string query = string.Format(QUERY_FORMAT, COLUMNS, values);
+
+                return Write(query);
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Write AgentDefintions to the database
@@ -99,13 +361,7 @@ namespace mod_db_mysql
                 // Build Query string
                 string query = string.Format(QUERY_FORMAT, COLUMNS, values);
 
-                try
-                {
-                    // Execute Query
-                    return MySqlHelper.ExecuteNonQuery(connectionString, query, null) >= 0;
-                }
-                catch (MySqlException ex) { logger.Error(ex); }
-                catch (Exception ex) { logger.Error(ex); }
+                return Write(query);
             }
 
             return false;
@@ -134,13 +390,7 @@ namespace mod_db_mysql
                 // Build Query string
                 string query = string.Format(QUERY_FORMAT, COLUMNS, values);
 
-                try
-                {
-                    // Execute Query
-                    return MySqlHelper.ExecuteNonQuery(connectionString, query, null) >= 0;
-                }
-                catch (MySqlException ex) { logger.Error(ex); }
-                catch (Exception ex) { logger.Error(ex); }
+                return Write(query);
             }
 
             return false;
@@ -169,13 +419,7 @@ namespace mod_db_mysql
                 // Build Query string
                 string query = string.Format(QUERY_FORMAT, COLUMNS, values);
 
-                try
-                {
-                    // Execute Query
-                    return MySqlHelper.ExecuteNonQuery(connectionString, query, null) >= 0;
-                }
-                catch (MySqlException ex) { logger.Error(ex); }
-                catch (Exception ex) { logger.Error(ex); }
+                return Write(query);
             }
 
             return false;
@@ -204,13 +448,7 @@ namespace mod_db_mysql
                 // Build Query string
                 string query = string.Format(QUERY_FORMAT, COLUMNS, values);
 
-                try
-                {
-                    // Execute Query
-                    return MySqlHelper.ExecuteNonQuery(connectionString, query, null) >= 0;
-                }
-                catch (MySqlException ex) { logger.Error(ex); }
-                catch (Exception ex) { logger.Error(ex); }
+                return Write(query);
             }
 
             return false;
@@ -273,13 +511,7 @@ namespace mod_db_mysql
 
                 string query = string.Join(";", queries);
 
-                try
-                {
-                    // Execute Samples Query
-                    return MySqlHelper.ExecuteNonQuery(connectionString, query, null) > 0;
-                }
-                catch (MySqlException ex) { logger.Error(ex); }
-                catch (Exception ex) { logger.Error(ex); }
+                return Write(query);
             }
 
             return false;

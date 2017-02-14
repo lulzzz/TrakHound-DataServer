@@ -46,7 +46,7 @@ namespace mod_db_mysql
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex);
+                    logger.Trace(ex);
                 }
             }
 
