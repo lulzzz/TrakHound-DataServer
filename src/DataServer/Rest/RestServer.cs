@@ -115,6 +115,8 @@ namespace TrakHound.DataServer.Rest
                             break;
                         }
                     }
+
+                    log.Info("Rest Response : " + context.Response.StatusCode);
                 }
             }
             catch (Exception ex)

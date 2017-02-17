@@ -11,6 +11,7 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Reflection;
+using TrakHound.Api.v2;
 
 namespace TrakHound.DataServer.Rest
 {
@@ -18,51 +19,82 @@ namespace TrakHound.DataServer.Rest
     {
         private static Logger log = LogManager.GetCurrentClassLogger();
 
-        private static List<IModule> _modules = new List<IModule>();
-        public static ReadOnlyCollection<IModule> LoadedModules
+        private static List<IRestModule> _modules = new List<IRestModule>();
+        public static ReadOnlyCollection<IRestModule> LoadedModules
         {
             get { return _modules.AsReadOnly(); }
         }
 
         public static void Load()
         {
-            var dir = AppDomain.CurrentDomain.BaseDirectory;
+            var assemblyDir = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
 
             // Get Modules embedded in the current assembly
-            var modules = FindModules(Assembly.GetExecutingAssembly());
+            var modules = FindModules(assemblyDir);
             if (modules != null)
             {
-                foreach (var module in modules) log.Info("Module Loaded : " + module.Name);
+                foreach (var module in modules) log.Info("Rest Module Loaded : " + module.Name);
             }
 
             _modules.AddRange(modules);
+
+            //var assemblyDir = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+            //if (!string.IsNullOrEmpty(path))
+            //{
+            //    log.Info("Reading Database Configuration File From '" + path + "'");
+
+            //    var modules = FindModules(assemblyDir);
+            //    if (modules != null)
+            //    {
+            //        foreach (var module in modules)
+            //        {
+            //            if (module.Initialize(path))
+            //            {
+            //                logger.Info(module.Name + " Database Module Initialize Successfully");
+            //                Database.module = module;
+            //                return true;
+            //            }
+            //        }
+            //    }
+            //}
+
+            //var dir = AppDomain.CurrentDomain.BaseDirectory;
+
+            //// Get Modules embedded in the current assembly
+            //var modules = FindModules(Assembly.GetExecutingAssembly());
+            //if (modules != null)
+            //{
+            //    foreach (var module in modules) log.Info("Module Loaded : " + module.Name);
+            //}
+
+            //_modules.AddRange(modules);
         }
 
-        public static List<IModule> Get()
+        public static List<IRestModule> Get()
         {
-            var l = new List<IModule>();
+            var l = new List<IRestModule>();
 
             foreach (var module in _modules)
             {
-                l.Add((IModule)Activator.CreateInstance(module.GetType()));
+                l.Add((IRestModule)Activator.CreateInstance(module.GetType()));
             }
 
             return l;
         }
 
-        public static IModule Get(Type t)
+        public static IRestModule Get(Type t)
         {
-            return (IModule)Activator.CreateInstance(t);
+            return (IRestModule)Activator.CreateInstance(t);
         }
 
 
         private class ModuleContainer
         {
-            [ImportMany(typeof(IModule))]
-            public IEnumerable<Lazy<IModule>> Modules { get; set; }
+            [ImportMany(typeof(IRestModule))]
+            public IEnumerable<Lazy<IRestModule>> Modules { get; set; }
         }
 
-        private static List<IModule> FindModules(string dir)
+        private static List<IRestModule> FindModules(string dir)
         {
             if (dir != null)
             {
@@ -77,7 +109,7 @@ namespace TrakHound.DataServer.Rest
             return null;
         }
 
-        private static List<IModule> FindModules(Assembly assembly)
+        private static List<IRestModule> FindModules(Assembly assembly)
         {
             if (assembly != null)
             {
@@ -89,7 +121,7 @@ namespace TrakHound.DataServer.Rest
             return null;
         }
 
-        private static List<IModule> FindModules(CompositionContainer container)
+        private static List<IRestModule> FindModules(CompositionContainer container)
         {
             try
             {
@@ -98,7 +130,7 @@ namespace TrakHound.DataServer.Rest
 
                 if (moduleContainer.Modules != null)
                 {
-                    var modules = new List<IModule>();
+                    var modules = new List<IRestModule>();
 
                     foreach (var lModule in moduleContainer.Modules)
                     {
@@ -109,7 +141,7 @@ namespace TrakHound.DataServer.Rest
                         }
                         catch (Exception ex)
                         {
-                            log.Error(ex, "Module Initialization Error");
+                            log.Error(ex, "Rest Module Initialization Error");
                         }
                     }
 

@@ -68,16 +68,16 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml" />
-    <Reference Include="TrakHound-Api">
+    <Reference Include="TrakHound-Api, Version=1.0.0.9125, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\TrakHound-Api\src\bin\Release\TrakHound-Api.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
-    <Compile Include="Database.cs" />
     <Compile Include="EndPointRange.cs" />
     <Compile Include="Rest\RestConfiguration.cs" />
-    <Compile Include="Rest\IModule.cs" />
+    <None Include="Rest\IModule.cs" />
     <Compile Include="Json.cs" />
     <Compile Include="Rest\Modules.cs" />
     <Compile Include="Rest\RestServer.cs" />
