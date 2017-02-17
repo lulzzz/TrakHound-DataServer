@@ -82,12 +82,11 @@ namespace TrakHound.DataServer.Streaming
         public void LoadConfiguration(Configuration config)
         {
             Configuration = config;
+            string path = config.SslCertificatePath;
 
             // Get SSL Certificate (if set)
-            if (!string.IsNullOrEmpty(config.SslCertificatePath))
+            if (!string.IsNullOrEmpty(path))
             {
-                string path = config.SslCertificatePath;
-
                 if (File.Exists(path))
                 {
                     X509Certificate2 cert = null;

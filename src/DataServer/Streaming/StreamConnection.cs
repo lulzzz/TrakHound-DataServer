@@ -71,7 +71,11 @@ namespace TrakHound.DataServer.Streaming
             stop = new ManualResetEvent(false);
 
             GetStream();
-            if (stream == null) logger.Warn(EndPoint.ToString() + " : No Stream Found");
+            if (streamReader == null)
+            {
+                logger.Warn(EndPoint.ToString() + " : No Stream Found");
+                Stop();
+            }
             else ReadStream();
         }
 
@@ -90,7 +94,7 @@ namespace TrakHound.DataServer.Streaming
                 {
                     // Create new SSL Stream from client's NetworkStream
                     var sslStream = new SslStream(_client.GetStream(), false);
-                    sslStream.AuthenticateAsServer(_sslCertificate, false, System.Security.Authentication.SslProtocols.Default, true);
+                    sslStream.AuthenticateAsServer(_sslCertificate, false, System.Security.Authentication.SslProtocols.Default, false);
                     stream = sslStream;
                 }
                 else
@@ -132,6 +136,8 @@ namespace TrakHound.DataServer.Streaming
                     // Read the next IStreamData object
                     string json = streamReader.ReadLine();
 
+                    logger.Trace(json);
+
                     // Parse JSON string to IStreamData
                     var streamData = Json.ReadStreamData(json);
                     if (streamData != null)
@@ -154,7 +160,7 @@ namespace TrakHound.DataServer.Streaming
             }
             catch (Exception ex)
             {
-                logger.Error(ex);
+                logger.Trace(ex);
             }
             finally
             {
