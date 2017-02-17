@@ -65,12 +65,13 @@ namespace TrakHound.DataServer
             var type = (string)jObject.Property("stream_data_type");
             switch (type)
             {
-                case "1": return new AgentDefinitionData();
-                case "2": return new DeviceDefinitionData();
-                case "3": return new ComponentDefinitionData();
-                case "4": return new DataItemDefinitionData();
-                case "5": return new SampleData(StreamDataType.ARCHIVED_SAMPLE);
-                case "6": return new SampleData(StreamDataType.CURRENT_SAMPLE);
+                case "1": return new ConnectionDefinitionData();
+                case "2": return new AgentDefinitionData();
+                case "3": return new DeviceDefinitionData();
+                case "4": return new ComponentDefinitionData();
+                case "5": return new DataItemDefinitionData();
+                case "6": return new SampleData(StreamDataType.ARCHIVED_SAMPLE);
+                case "7": return new SampleData(StreamDataType.CURRENT_SAMPLE);
             }
 
             throw new Exception("Stream Data Type not supported");

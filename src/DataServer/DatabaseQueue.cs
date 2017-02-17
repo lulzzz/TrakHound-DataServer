@@ -90,6 +90,10 @@ namespace TrakHound.DataServer
                 {
                     var sentItems = new List<string>();
 
+                    // Write ConnectionDefintions to Database
+                    var connections = streamData.OfType<ConnectionDefinitionData>().ToList();
+                    if (Database.Write(connections)) sentItems.AddRange(connections.Select(o => o.EntryId));
+
                     // Write AgentDefintions to Database
                     var agents = streamData.OfType<AgentDefinitionData>().ToList();
                     if (Database.Write(agents)) sentItems.AddRange(agents.Select(o => o.EntryId));
@@ -124,16 +128,6 @@ namespace TrakHound.DataServer
 
             } while (!stop.WaitOne(Interval, true));
         }
-
-        public bool WriteSql(List<AgentDefinitionData> definitions) { return Database.Write(definitions); }
-         
-        public bool WriteSql(List<ComponentDefinitionData> definitions) { return Database.Write(definitions); }
-       
-        public bool WriteSql(List<DataItemDefinitionData> definitions) { return Database.Write(definitions); }
-         
-        public bool WriteSql(List<DeviceDefinitionData> definitions) { return Database.Write(definitions); }
-           
-        public bool WriteSql(List<SampleData> samples) { return Database.Write(samples); }
     }
 
 }
