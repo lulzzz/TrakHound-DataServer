@@ -185,6 +185,16 @@ namespace mod_db_sql
         }
 
         /// <summary>
+        /// Read all of the Connections available from the DataServer
+        /// </summary>
+        public List<ConnectionDefinition> ReadConnections()
+        {
+            string query = "SELECT * FROM [connections]";
+
+            return ReadList<ConnectionDefinition>(query);
+        }
+
+        /// <summary>
         /// Read the most ConnectionDefintion from the database
         /// </summary>
         public ConnectionDefinition ReadConnection(string deviceId)

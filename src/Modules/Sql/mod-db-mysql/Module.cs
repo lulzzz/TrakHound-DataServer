@@ -176,6 +176,16 @@ namespace mod_db_mysql
 
             return ReadList<ComponentDefinition>(query);
         }
+   
+        /// <summary>
+        /// Read all of the Connections available from the DataServer
+        /// </summary>
+        public List<ConnectionDefinition> ReadConnections()
+        {
+            string query = "SELECT * FROM `connections`";
+
+            return ReadList<ConnectionDefinition>(query);
+        }
 
         /// <summary>
         /// Read the most ConnectionDefintion from the database
@@ -464,8 +474,8 @@ namespace mod_db_mysql
                 string COLUMNS = "`device_id`, `id`, `timestamp`, `agent_instance_id`, `sequence`, `cdata`, `condition`";
                 string QUERY_FORMAT_ARCHIVED = "INSERT IGNORE INTO `archived_samples` ({0}) VALUES {1}";
                 string QUERY_FORMAT_CURRENT = "INSERT IGNORE INTO `current_samples` ({0}) VALUES {1} ON DUPLICATE KEY UPDATE {2}";
-                string VALUE_FORMAT = "('{0}','{1}','{2}','{3}','{4}','{5}','{6}')";
-                string UPDATE_FORMAT = "`timestamp`='{0}',`agent_instance_id`='{1}',`sequence`='{2}',`cdata`='{3}',`condition`='{4}'";
+                string VALUE_FORMAT = "('{0}','{1}',{2},{3},{4},'{5}','{6}')";
+                string UPDATE_FORMAT = "`timestamp`={0},`agent_instance_id`={1},`sequence`={2},`cdata`='{3}',`condition`='{4}'";
 
                 // Build Archived VALUES string
                 string values = "";
