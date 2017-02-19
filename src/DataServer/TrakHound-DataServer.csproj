@@ -77,9 +77,6 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="EndPointRange.cs" />
     <Compile Include="Json\StreamData.cs" />
-    <None Include="Rest\RestConfiguration.cs" />
-    <None Include="Rest\Modules.cs" />
-    <None Include="Rest\RestServer.cs" />
     <None Include="events.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
