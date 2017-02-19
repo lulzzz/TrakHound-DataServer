@@ -9,19 +9,15 @@ using System.Configuration.Install;
 using System.IO;
 using System.Reflection;
 using System.ServiceProcess;
-using System.Threading;
 using TrakHound.Api.v2;
 using TrakHound.DataServer.Streaming;
-using TrakHound.DataServer.Rest;
 
 namespace TrakHound.DataServer
 {
     static class Program
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        private static ManualResetEvent stop;
         private static StreamingServer streamingServer;
-        private static RestServer restServer;
 
         /// <summary>
         /// The main entry point for the application.
@@ -90,19 +86,9 @@ namespace TrakHound.DataServer
                         throw ex;
                     }
 
-                    // Start the Sreaming Server (Upload)
-                    if (config.Streaming != null)
-                    {
-                        streamingServer = new StreamingServer(config);
-                        streamingServer.Start();
-                    }
-
-                    // Start the Rest Server (Download)
-                    if (config.Rest != null)
-                    {
-                        restServer = new RestServer(config);
-                        restServer.Start();
-                    }
+                    // Start the Sreaming Server
+                    streamingServer = new StreamingServer(config);
+                    streamingServer.Start();
                 }
                 else
                 {
@@ -120,7 +106,7 @@ namespace TrakHound.DataServer
 
         public static void Stop()
         {
-            if (stop != null) stop.Set();
+            if (streamingServer != null) streamingServer.Stop();
         }
 
         private static void InstallService()

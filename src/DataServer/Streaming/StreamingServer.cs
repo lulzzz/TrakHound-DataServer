@@ -104,10 +104,10 @@ namespace TrakHound.DataServer.Streaming
             }
 
             // Set Client Connection Timeout
-            Timeout = config.Streaming.ClientTimeout;
+            Timeout = config.ClientTimeout;
 
             // Set Port
-            _port = config.Streaming.Port;
+            _port = config.Port;
 
             // Load EndPoints Filter
             if (config.EndPoints != null)
@@ -143,7 +143,7 @@ namespace TrakHound.DataServer.Streaming
             stop = new ManualResetEvent(false);
 
             // Create authentication timer
-            if (!string.IsNullOrEmpty(Configuration.Streaming.AuthenticationUrl))
+            if (!string.IsNullOrEmpty(Configuration.AuthenticationUrl))
             {
                 authenticationTimer = new System.Timers.Timer();
                 authenticationTimer.Interval = AUTHENTICATION_INTERVAL;
@@ -154,6 +154,11 @@ namespace TrakHound.DataServer.Streaming
             // Create new thread for listening for streaming connections
             thread = new Thread(new ThreadStart(Worker));
             thread.Start();
+        }
+
+        public void Stop()
+        {
+            if (stop != null) stop.Set();
         }
 
         private void Worker()
@@ -246,7 +251,7 @@ namespace TrakHound.DataServer.Streaming
 
         public static bool AddToQueue(IStreamData data)
         {
-            if (string.IsNullOrEmpty(Configuration.Streaming.AuthenticationUrl) || ValidateApiKey(data))
+            if (string.IsNullOrEmpty(Configuration.AuthenticationUrl) || ValidateApiKey(data))
             {
                 Queue.Add(data);
                 return true;
@@ -259,7 +264,7 @@ namespace TrakHound.DataServer.Streaming
         {
             foreach (var streamData in data)
             {
-                if (string.IsNullOrEmpty(Configuration.Streaming.AuthenticationUrl) || ValidateApiKey(streamData))
+                if (string.IsNullOrEmpty(Configuration.AuthenticationUrl) || ValidateApiKey(streamData))
                 {
                     Queue.Add(streamData);
                     return true;
@@ -294,7 +299,7 @@ namespace TrakHound.DataServer.Streaming
                     if (key == null)
                     {
                         // Create new Device
-                        bool success = Device.Create(data.ApiKey, data.DeviceId, Configuration.Streaming.AuthenticationUrl);
+                        bool success = Device.Create(data.ApiKey, data.DeviceId, Configuration.AuthenticationUrl);
                         if (success)
                         {
                             // Add to Authenticated list
@@ -330,7 +335,7 @@ namespace TrakHound.DataServer.Streaming
                 foreach (var key in authenticatedKeys)
                 {
                     // Create new Device
-                    bool success = Device.Create(key.Key, key.DeviceId, Configuration.Streaming.AuthenticationUrl);
+                    bool success = Device.Create(key.Key, key.DeviceId, Configuration.AuthenticationUrl);
                     if (!success)
                     {
                         lock (_lock)
@@ -349,7 +354,7 @@ namespace TrakHound.DataServer.Streaming
                 foreach (var key in unauthenticatedKeys)
                 {
                     // Create new Device
-                    bool success = Device.Create(key.Key, key.DeviceId, Configuration.Streaming.AuthenticationUrl);
+                    bool success = Device.Create(key.Key, key.DeviceId, Configuration.AuthenticationUrl);
                     if (success)
                     {
                         lock (_lock)

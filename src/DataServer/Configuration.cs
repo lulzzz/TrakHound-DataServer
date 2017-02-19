@@ -27,18 +27,27 @@ namespace TrakHound.DataServer
         [XmlElement("SslCertificatePassword")]
         public string SslCertificatePassword { get; set; }
 
-        [XmlElement("Rest")]
-        public RestConfiguration Rest { get; set; }
-
-        [XmlElement("Streaming")]
-        public StreamingConfiguration Streaming { get; set; }
-
         [XmlElement("EndPoints")]
         public EndPointRange EndPoints { get; set; }
 
         [XmlElement("DatabaseConfigurationPath")]
         public string DatabaseConfigurationPath { get; set; }
 
+        [XmlAttribute("port")]
+        public int Port { get; set; }
+
+        [XmlAttribute("clientTimeout")]
+        public int ClientTimeout { get; set; }
+
+        [XmlAttribute("authenticationUrl")]
+        public string AuthenticationUrl { get; set; }
+
+
+        public Configuration()
+        {
+            Port = 8472;
+            ClientTimeout = 30000; // 30 Seconds
+        }
 
         public static Configuration Get(string path)
         {

@@ -77,15 +77,15 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="EndPointRange.cs" />
     <Compile Include="Json\StreamData.cs" />
-    <Compile Include="Rest\RestConfiguration.cs" />
-    <Compile Include="Rest\Modules.cs" />
-    <Compile Include="Rest\RestServer.cs" />
+    <None Include="Rest\RestConfiguration.cs" />
+    <None Include="Rest\Modules.cs" />
+    <None Include="Rest\RestServer.cs" />
     <None Include="events.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
     <Compile Include="DatabaseQueue.cs" />
-    <Compile Include="Streaming\StreamingConfiguration.cs" />
+    <None Include="Streaming\StreamingConfiguration.cs" />
     <Compile Include="Streaming\ApiKey.cs" />
     <Compile Include="Streaming\StreamingServer.cs" />
     <Compile Include="DataServerService.cs">
