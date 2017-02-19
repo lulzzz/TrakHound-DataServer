@@ -5,7 +5,6 @@
 
 using Newtonsoft.Json;
 using System;
-using TrakHound.Api.v2;
 using TrakHound.Api.v2.Data;
 
 namespace mod_rest_samples
@@ -13,8 +12,10 @@ namespace mod_rest_samples
     public class Item
     {
         [JsonProperty("timestamp")]
-        [JsonConverter(typeof(UnixTimeJsonConverter))]
         public DateTime Timestamp { get; set; }
+
+        [JsonProperty("agent_instance_id")]
+        public long AgentInstanceId { get; set; }
 
         [JsonProperty("id")]
         public string Id { get; set; }
@@ -31,6 +32,7 @@ namespace mod_rest_samples
         public Item(Sample sample)
         {
             Timestamp = sample.Timestamp;
+            AgentInstanceId = sample.AgentInstanceId;
             Id = sample.Id;
             Sequence = sample.Sequence;
             CDATA = sample.CDATA;
