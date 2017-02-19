@@ -37,37 +37,6 @@ namespace TrakHound.DataServer.Rest
             }
 
             _modules.AddRange(modules);
-
-            //var assemblyDir = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
-            //if (!string.IsNullOrEmpty(path))
-            //{
-            //    log.Info("Reading Database Configuration File From '" + path + "'");
-
-            //    var modules = FindModules(assemblyDir);
-            //    if (modules != null)
-            //    {
-            //        foreach (var module in modules)
-            //        {
-            //            if (module.Initialize(path))
-            //            {
-            //                logger.Info(module.Name + " Database Module Initialize Successfully");
-            //                Database.module = module;
-            //                return true;
-            //            }
-            //        }
-            //    }
-            //}
-
-            //var dir = AppDomain.CurrentDomain.BaseDirectory;
-
-            //// Get Modules embedded in the current assembly
-            //var modules = FindModules(Assembly.GetExecutingAssembly());
-            //if (modules != null)
-            //{
-            //    foreach (var module in modules) log.Info("Module Loaded : " + module.Name);
-            //}
-
-            //_modules.AddRange(modules);
         }
 
         public static List<IRestModule> Get()

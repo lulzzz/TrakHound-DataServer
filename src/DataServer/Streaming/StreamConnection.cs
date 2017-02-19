@@ -139,7 +139,7 @@ namespace TrakHound.DataServer.Streaming
                     logger.Trace(json);
 
                     // Parse JSON string to IStreamData
-                    var streamData = Json.ReadStreamData(json);
+                    var streamData = Json.StreamData.Read(json);
                     if (streamData != null)
                     {
                         if (StreamingServer.AddToQueue(streamData)) response = SUCCESS;

@@ -88,45 +88,55 @@ namespace TrakHound.DataServer
 
                 if (streamData != null && streamData.Count > 0)
                 {
-                    var sentItems = new List<string>();
+                    var sentIds = new List<string>();
 
                     // Write ConnectionDefintions to Database
                     var connections = streamData.OfType<ConnectionDefinitionData>().ToList();
-                    if (Database.Write(connections)) sentItems.AddRange(connections.Select(o => o.EntryId));
+                    if (Database.Write(connections)) sentIds.AddRange(GetSentDataIds(connections.ToList<IStreamData>(), "Connections"));
 
                     // Write AgentDefintions to Database
                     var agents = streamData.OfType<AgentDefinitionData>().ToList();
-                    if (Database.Write(agents)) sentItems.AddRange(agents.Select(o => o.EntryId));
+                    if (Database.Write(agents)) sentIds.AddRange(GetSentDataIds(agents.ToList<IStreamData>(), "Agents"));
 
                     // Write ComponentDefinitions to Database
                     var components = streamData.OfType<ComponentDefinitionData>().ToList();
-                    if (Database.Write(components)) sentItems.AddRange(components.Select(o => o.EntryId));
+                    if (Database.Write(components)) sentIds.AddRange(GetSentDataIds(components.ToList<IStreamData>(), "Components"));
 
                     // Write DataItems to Database
                     var dataItems = streamData.OfType<DataItemDefinitionData>().ToList();
-                    if (Database.Write(dataItems)) sentItems.AddRange(dataItems.Select(o => o.EntryId));
+                    if (Database.Write(dataItems)) sentIds.AddRange(GetSentDataIds(dataItems.ToList<IStreamData>(), "DataItems"));
 
                     // Write DeviceDefinitions to Database
                     var devices = streamData.OfType<DeviceDefinitionData>().ToList();
-                    if (Database.Write(devices)) sentItems.AddRange(devices.Select(o => o.EntryId));
+                    if (Database.Write(devices)) sentIds.AddRange(GetSentDataIds(devices.ToList<IStreamData>(), "Devices"));
 
                     // Write Samples to Database
                     var samples = streamData.OfType<SampleData>().ToList();
-                    if (Database.Write(samples)) sentItems.AddRange(samples.Select(o => o.EntryId));
+                    if (Database.Write(samples)) sentIds.AddRange(GetSentDataIds(samples.ToList<IStreamData>(), "Samples"));
 
-                    if (sentItems.Count > 0)
+                    if (sentIds.Count > 0)
                     {
-                        log.Info(streamData.Count + " Items Written to Database successfully");
-
                         // Remove written samples
-                        foreach (var item in streamData)
+                        foreach (var id in sentIds)
                         {
-                            lock (_lock) queue.RemoveAll(o => o.EntryId == item.EntryId);
+                            lock (_lock) queue.RemoveAll(o => o.EntryId == id);
                         }
                     }
                 }
 
             } while (!stop.WaitOne(Interval, true));
+        }
+
+        private List<string> GetSentDataIds(List<IStreamData> sentData, string tag)
+        {
+            var sent = sentData.Select(o => o.EntryId).ToList();
+            if (sent.Count > 0)
+            {
+                log.Info(sent.Count + " " + tag + " Written to Database successfully");
+                return sent;
+            }
+
+            return new List<string>();
         }
     }
 
