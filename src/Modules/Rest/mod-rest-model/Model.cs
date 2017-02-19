@@ -11,6 +11,7 @@ using System.IO;
 using System.Text;
 using TrakHound.Api.v2;
 using TrakHound.Api.v2.Data;
+using Json = TrakHound.Api.v2.Json;
 
 namespace mod_rest_model
 {
@@ -80,7 +81,7 @@ namespace mod_rest_model
                         deviceItem.Add(componentItems);
 
                         // Write DeviceItem JSON to stream
-                        string json = Requests.ToJson(deviceItem);
+                        string json = Json.Convert.ToJson(deviceItem, true);
                         var bytes = Encoding.UTF8.GetBytes(json);
                         stream.Write(bytes, 0, bytes.Length);
                     }

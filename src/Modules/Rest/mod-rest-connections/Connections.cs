@@ -9,6 +9,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Text;
 using TrakHound.Api.v2;
+using Json = TrakHound.Api.v2.Json;
 
 namespace mod_rest_connections
 {
@@ -33,7 +34,7 @@ namespace mod_rest_connections
                         if (connection != null)
                         {
                             // Write DeviceItem JSON to stream
-                            string json = Requests.ToJson(connection);
+                            string json = Json.Convert.ToJson(connection, true);
                             var bytes = Encoding.UTF8.GetBytes(json);
                             stream.Write(bytes, 0, bytes.Length);
                         }
@@ -44,7 +45,7 @@ namespace mod_rest_connections
                         if (connections != null)
                         {
                             // Write DeviceItem JSON to stream
-                            string json = Requests.ToJson(connections);
+                            string json = Json.Convert.ToJson(connections, true);
                             var bytes = Encoding.UTF8.GetBytes(json);
                             stream.Write(bytes, 0, bytes.Length);
                         }

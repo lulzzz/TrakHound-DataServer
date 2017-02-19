@@ -11,6 +11,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using TrakHound.Api.v2;
+using Json = TrakHound.Api.v2.Json;
 
 namespace mod_rest_samples
 {
@@ -39,6 +40,7 @@ namespace mod_rest_samples
                             foreach (var sample in samples)
                             {
                                 bool write = true;
+                                var item = new Item(sample);
 
                                 // Only write to output stream if new
                                 var x = sent.Find(o => o.Id == sample.Id);
@@ -47,15 +49,15 @@ namespace mod_rest_samples
                                     if (sample.Timestamp > x.Timestamp)
                                     {
                                         sent.Remove(x);
-                                        sent.Add(new Item(sample));
+                                        sent.Add(item);
                                     }
                                     else write = false;
                                 }
-                                else sent.Add(new Item(sample));
+                                else sent.Add(item);
 
                                 if (write)
                                 {
-                                    string json = Requests.ToJson(sample);
+                                    string json = Json.Convert.ToJson(item);
                                     json += Environment.NewLine;
                                     var bytes = Encoding.UTF8.GetBytes(json);
                                     stream.Write(bytes, 0, bytes.Length);
