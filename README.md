@@ -10,15 +10,6 @@ TrakHound DataClient and DataServer are designed specifically to store MTConnect
 # TrakHound
 The TrakHound DataClient and DataServer applications provide the manufacturing community with a Free and Open Source alternative so anyone can start collecting valuable machine data that can be used to analyze and improve future production in the upcoming years that will dominated by the IIoT. TrakHound provides you the tools to collect MTConnect data in near raw form and to store that data for later use. Even if you don't see the need for this data now, you may in several years and will wish you had previous year's data to compare. **Take the steps today to prepare for tomorrow and get started with IIoT with TrakHound!**
 
-# Features
-- Automatically finds and configures MTConnect devices on a network
-- Data filtering with triggers to collect all data or only what is needed
-- Ability to send data to multiple TrakHound DataServers to create data redundancy or to meet data security requirements (local vs cloud)
-- Utitlizes streaming connections for both MTConnect and connections to TrakHound DataServers
-- Supports SSL(TLS) for sending data to TrakHound DataServers
-- Non-volatile buffering to retain collected data between connection interruptions
-
-
 ### Data Storage
 **MTConnect Agents by themselves are not storage applications.** This is made clear in the MTConnect Standard. Instead the purpose of MTConnect Agents is to serve data to client applications when requested. While the Agent does keep a small buffer, this buffer is not intended to be used for data storage but rather to retain data between connection interruptions. TrakHound fulfills the role of requesting this data and then storing it in a database for permanant storage. Data is stored which can then be accessed by other TrakHound applications, ERP/MES systems, third party software, or by reading the database directly using software such as Microsoft Access.
 
