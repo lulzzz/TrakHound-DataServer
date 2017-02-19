@@ -227,7 +227,8 @@ namespace mod_db_mysql
         {
             var samples = new List<Sample>();
 
-            string COLUMNS = "`device_id`,`id`,`timestamp`,`sequence`,`cdata`,`condition`";
+            //string COLUMNS = "`device_id`, `agent_instance_id`, `id`,`timestamp`,`sequence`,`cdata`,`condition`";
+            string COLUMNS = "*";
             string TABLENAME_ARCHIVED = "archived_samples";
             string TABLENAME_CURRENT = "current_samples";
             string INSTANCE_FORMAT = "CALL getInstance('{0}', {1})";
