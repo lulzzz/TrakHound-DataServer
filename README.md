@@ -5,7 +5,7 @@ TrakHound Data Server is used to receive MTConnect® data streamed from TrakHoun
 
 TrakHound DataClient and DataServer are designed specifically to store MTConnect® data in a database. Nearly all MTConnect data is stored with its original terminology in database tables for data storage or to use with cloud applications. 
 
-![TrakHound DataClients and DataServers](DataClient-Server-02.jpg)
+![TrakHound Diagram](TrakHound-Diagram-01.jpg)
 
 # TrakHound
 The TrakHound DataClient and DataServer applications provide the manufacturing community with a Free and Open Source alternative so anyone can start collecting valuable machine data that can be used to analyze and improve future production in the upcoming years that will dominated by the IIoT. TrakHound provides you the tools to collect MTConnect data in near raw form and to store that data for later use. Even if you don't see the need for this data now, you may in several years and will wish you had previous year's data to compare. **Take the steps today to prepare for tomorrow and get started with IIoT with TrakHound!**
