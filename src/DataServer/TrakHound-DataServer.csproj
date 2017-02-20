@@ -82,7 +82,6 @@
       <SubType>Designer</SubType>
     </None>
     <Compile Include="DatabaseQueue.cs" />
-    <None Include="Streaming\StreamingConfiguration.cs" />
     <Compile Include="Streaming\ApiKey.cs" />
     <Compile Include="Streaming\StreamingServer.cs" />
     <Compile Include="DataServerService.cs">
