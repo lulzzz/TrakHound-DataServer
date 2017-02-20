@@ -15,6 +15,7 @@ The TrakHound DataClient and DataServer applications provide the manufacturing c
 - Combines MTConnect Agent data into a single data location
 - Isolates machine networks so that client applications only need to access the PC running the DataServer
 - Data stored in the database can be accessed directly using applications such as Microsoft Access, Crystal Reports, etc.
+- Uses pluggable modules for database communications
 
 ### Data Storage
 **MTConnect Agents by themselves are not storage applications.** This is made clear in the MTConnect Standard. Instead the purpose of MTConnect Agents is to serve data to client applications when requested. While the Agent does keep a small buffer, this buffer is not intended to be used for data storage but rather to retain data between connection interruptions. TrakHound fulfills the role of requesting this data and then storing it in a database for permanant storage. Data is stored which can then be accessed by other TrakHound applications, ERP/MES systems, third party software, or by reading the database directly using software such as Microsoft Access.
