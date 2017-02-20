@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mod-db-sql", "Modules\mod-d
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrakHound-DataServer-Menu", "DataServer-Menu\TrakHound-DataServer-Menu.csproj", "{A26AE1CA-C45B-4F56-B0E0-A6361F0AE4C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrakHound-AnalyticsServer", "..\..\TrakHound-AnalyticsServer\src\AnalyticsServer\TrakHound-AnalyticsServer.csproj", "{15095F8D-6EC3-414F-84EE-EDFCDCD3F856}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,10 +35,6 @@ Global
 		{A26AE1CA-C45B-4F56-B0E0-A6361F0AE4C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A26AE1CA-C45B-4F56-B0E0-A6361F0AE4C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A26AE1CA-C45B-4F56-B0E0-A6361F0AE4C7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{15095F8D-6EC3-414F-84EE-EDFCDCD3F856}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{15095F8D-6EC3-414F-84EE-EDFCDCD3F856}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{15095F8D-6EC3-414F-84EE-EDFCDCD3F856}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{15095F8D-6EC3-414F-84EE-EDFCDCD3F856}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
