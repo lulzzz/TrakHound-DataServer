@@ -1,7 +1,7 @@
 ![TrakHound DataServer](dataserver-logo-02-75px.png)
 <br>
 <br>
-TrakHound Data Server is used to receive MTConnect® data streamed from TrakHound Data Clients and store that data in a database.
+TrakHound DataServer is used to receive MTConnect® data streamed from TrakHound DataClients and store that data in a database.
 
 TrakHound DataClient and DataServer are designed specifically to store MTConnect® data in a database. Nearly all MTConnect data is stored with its original terminology in database tables for data storage or to use with cloud applications. 
 
