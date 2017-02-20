@@ -42,9 +42,16 @@ namespace TrakHound.DataServer
         [XmlAttribute("authenticationUrl")]
         public string AuthenticationUrl { get; set; }
 
+        /// <summary>
+        /// Gets or Sets whether the DataClient sends messages to external applications (ex. System Tray Menu)
+        /// </summary>
+        [XmlAttribute("sendMessages")]
+        public bool SendMessages { get; set; }
+
 
         public Configuration()
         {
+            SendMessages = true;
             Port = 8472;
             ClientTimeout = 30000; // 30 Seconds
         }

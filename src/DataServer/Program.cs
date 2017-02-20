@@ -9,15 +9,22 @@ using System.Configuration.Install;
 using System.IO;
 using System.Reflection;
 using System.ServiceProcess;
+using System.Timers;
 using TrakHound.Api.v2;
 using TrakHound.DataServer.Streaming;
+using WCF = TrakHound.Api.v2.WCF;
 
 namespace TrakHound.DataServer
 {
     static class Program
     {
+        private const int MENU_UPDATE_INTERVAL = 2000;
+
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        private static StreamingServer streamingServer;
+        private static StreamingServer server;
+        private static ServiceBase service;
+        private static Timer menuUpdateTimer;
+        private static bool started = false;
 
         /// <summary>
         /// The main entry point for the application.
@@ -59,9 +66,19 @@ namespace TrakHound.DataServer
             }
             else
             {
-                // Start as Service
-                ServiceBase.Run(new DataServerService());
+                StartService();
             }
+        }
+
+        public static void StartService()
+        {
+            if (service == null) service = new DataServerService();
+            ServiceBase.Run(service);
+        }
+
+        public static void StopService()
+        {
+            if (service != null) service.Stop();
         }
 
         public static void Start()
@@ -86,9 +103,20 @@ namespace TrakHound.DataServer
                         throw ex;
                     }
 
+                    if (config.SendMessages)
+                    {
+                        // Start Menu Update Timer
+                        menuUpdateTimer = new Timer();
+                        menuUpdateTimer.Elapsed += UpdateMenuStatus;
+                        menuUpdateTimer.Interval = MENU_UPDATE_INTERVAL;
+                        menuUpdateTimer.Start();
+                    }
+
                     // Start the Sreaming Server
-                    streamingServer = new StreamingServer(config);
-                    streamingServer.Start();
+                    server = new StreamingServer(config);
+                    server.Start();
+
+                    started = true;
                 }
                 else
                 {
@@ -106,7 +134,13 @@ namespace TrakHound.DataServer
 
         public static void Stop()
         {
-            if (streamingServer != null) streamingServer.Stop();
+            if (menuUpdateTimer != null)
+            {
+                menuUpdateTimer.Stop();
+                menuUpdateTimer.Dispose();
+            }
+
+            if (server != null) server.Stop();
         }
 
         private static void InstallService()
@@ -125,6 +159,12 @@ namespace TrakHound.DataServer
             logger.Info("TrakHound DataServer : v" + Assembly.GetExecutingAssembly().GetName().Version.ToString());
             logger.Info(@"Copyright 2017 TrakHound Inc., All Rights Reserved");
             logger.Info("---------------------------");
+        }
+
+        private static void UpdateMenuStatus(object sender, ElapsedEventArgs e)
+        {
+            string status = started ? "Running" : "Stopped";
+            WCF.MessageClient.Send("trakhound-dataserver-menu", new WCF.Message("Status", status));
         }
     }
 }
