@@ -12,7 +12,7 @@ using System.ServiceProcess;
 using System.Timers;
 using TrakHound.Api.v2;
 using TrakHound.DataServer.Streaming;
-using WCF = TrakHound.Api.v2.WCF;
+using Messaging = TrakHound.Api.v2.Messaging;
 
 namespace TrakHound.DataServer
 {
@@ -164,7 +164,7 @@ namespace TrakHound.DataServer
         private static void UpdateMenuStatus(object sender, ElapsedEventArgs e)
         {
             string status = started ? "Running" : "Stopped";
-            WCF.MessageClient.Send("trakhound-dataserver-menu", new WCF.Message("Status", status));
+            Messaging.Message.Send("trakhound-dataserver-menu", "Status", status);
         }
     }
 }
