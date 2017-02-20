@@ -46,6 +46,8 @@ namespace mod_db_mysql
             return false;
         }
 
+        public void Close() { }
+
         #region "Read"
 
         private static T Read<T>(string query)

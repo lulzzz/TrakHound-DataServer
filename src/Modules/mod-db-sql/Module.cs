@@ -45,6 +45,8 @@ namespace mod_db_sql
             return false;
         }
 
+        public void Close() { }
+
         #region "Read"
 
         private static T Read<T>(string query)
