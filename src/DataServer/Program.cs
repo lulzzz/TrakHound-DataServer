@@ -141,6 +141,8 @@ namespace TrakHound.DataServer
             }
 
             if (server != null) server.Stop();
+
+            started = false;
         }
 
         private static void InstallService()

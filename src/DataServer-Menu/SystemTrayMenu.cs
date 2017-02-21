@@ -7,9 +7,7 @@ using NLog;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.ServiceProcess;
 using System.Windows.Forms;
 
 namespace TrakHound.DataServer.Menu
@@ -19,49 +17,67 @@ namespace TrakHound.DataServer.Menu
         private const string SERVICE_NAME = "TrakHound-DataServer";
 
         private static Logger log = LogManager.GetCurrentClassLogger();
-        private static MenuItem StatusMenuItem = new MenuItem() { Enabled = false };
+        private static ToolStripMenuItem StatusMenuItem = new ToolStripMenuItem() { Enabled = false };
 
         public static NotifyIcon NotifyIcon = new NotifyIcon();
-       
+
 
         public SystemTrayMenu()
         {
+            // Create ContextMenu
+            var menu = new ContextMenuStrip();
+            menu.Items.Add(StatusMenuItem);
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(new ToolStripMenuItem("Start", Properties.Resources.UAC_01, Start));
+            menu.Items.Add(new ToolStripMenuItem("Stop", Properties.Resources.UAC_01, Stop));
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(new ToolStripMenuItem("Open Configuration File", null, OpenConfigurationFile));
+            menu.Items.Add(new ToolStripMenuItem("Open Log File", null, OpenLogFile));
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(new ToolStripMenuItem("Exit", null, Exit));
+
+            // Set NotifyIcon Properties
             NotifyIcon.Text = "TrakHound DataServer";
             NotifyIcon.Icon = Properties.Resources.dataserver;
-
-            var menu = new ContextMenu();
-            
-            menu.MenuItems.Add(StatusMenuItem);
-            menu.MenuItems.Add(new MenuItem("-"));
-            menu.MenuItems.Add(new MenuItem("Start", Start));
-            menu.MenuItems.Add(new MenuItem("Stop", Stop));
-            menu.MenuItems.Add(new MenuItem("-"));
-            menu.MenuItems.Add(new MenuItem("Open Configuration File", OpenConfigurationFile));
-            menu.MenuItems.Add(new MenuItem("Open Log File", OpenLogFile));
-            menu.MenuItems.Add(new MenuItem("-"));
-            menu.MenuItems.Add(new MenuItem("Exit", Exit));
-
-            NotifyIcon.ContextMenu = menu;
+            NotifyIcon.ContextMenuStrip = menu;
             NotifyIcon.Visible = true;
         }
 
         private void Start(object sender, EventArgs e)
         {
-            var controller = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == SERVICE_NAME);
-            if (controller != null)
+            try
             {
-                if (controller.Status != ServiceControllerStatus.Running) controller.Start();
-                else log.Info(SERVICE_NAME + " is already running");
+                var info = new ProcessStartInfo("sc");
+                info.Arguments = "start " + SERVICE_NAME;
+                info.WindowStyle = ProcessWindowStyle.Hidden;
+
+                //Vista or higher check (Run as Administrator)
+                if (Environment.OSVersion.Version.Major >= 6) info.Verb = "runas";
+
+                Process.Start(info);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
             }
         }
 
         private void Stop(object sender, EventArgs e)
         {
-            var controller = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == SERVICE_NAME);
-            if (controller != null)
+            try
             {
-                if (controller.Status != ServiceControllerStatus.Stopped) controller.Stop();
-                else log.Info(SERVICE_NAME + " is already stopped");
+                var info = new ProcessStartInfo("sc");
+                info.Arguments = "stop " + SERVICE_NAME;
+                info.WindowStyle = ProcessWindowStyle.Hidden;
+
+                //Vista or higher check (Run as Administrator)
+                if (Environment.OSVersion.Version.Major >= 6) info.Verb = "runas";
+
+                Process.Start(info);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
             }
         }
 
