@@ -462,13 +462,13 @@ namespace mod_db_sql
             {
                 string query = "";
 
-                string COLUMNS = "[device_id], [agent_instance_id], [id], [uuid], [name], [native_name], [sample_interval], [sample_rate], [iso_841_class]";
+                string COLUMNS = "[device_id], [agent_instance_id], [id], [uuid], [name], [native_name], [sample_interval], [sample_rate], [iso_841_class], [manufacturer], [model], [serial_number], [station], [description]";
 
                 string QUERY_FORMAT = "IF NOT EXISTS(SELECT * FROM [devices] WHERE {0}) BEGIN {1} END ELSE BEGIN {2} END";
                 string WHERE_FORMAT = "[device_id]='{0}' AND [agent_instance_id]={1} AND [id]='{2}'";
                 string INSERT_FORMAT = "INSERT INTO [devices] ({0}) VALUES {1}";
-                string VALUE_FORMAT = "('{0}',{1},'{2}','{3}','{4}','{5}',{6},{7},'{8}')";
-                string UPDATE_FORMAT = "UPDATE [devices] SET [uuid]='{0}', [name]='{1}', [native_name]='{2}', [sample_interval]={3}, [sample_rate]={4}, [iso_841_class]='{5}' WHERE {6}";
+                string VALUE_FORMAT = "('{0}',{1},'{2}','{3}','{4}','{5}',{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}')";
+                string UPDATE_FORMAT = "UPDATE [devices] SET [uuid]='{0}', [name]='{1}', [native_name]='{2}', [sample_interval]={3}, [sample_rate]={4}, [iso_841_class]='{5}', [manufacturer]='{6}', [model]='{7}', [serial_number]='{8}', [station]='{9}', [description]='{10}' WHERE {11}";
 
                 // Build VALUES string
                 var v = new string[definitions.Count];
@@ -477,9 +477,9 @@ namespace mod_db_sql
                     var d = definitions[i];
 
                     var where = string.Format(WHERE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id);
-                    var values = string.Format(VALUE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id, d.Uuid, d.Name, d.NativeName, d.SampleInterval, d.SampleRate, d.Iso841Class);
+                    var values = string.Format(VALUE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id, d.Uuid, d.Name, d.NativeName, d.SampleInterval, d.SampleRate, d.Iso841Class, d.Manufacturer, d.Model, d.SerialNumber, d.Station, d.Description);
                     var insert = string.Format(INSERT_FORMAT, COLUMNS, values);
-                    var update = string.Format(UPDATE_FORMAT, d.Uuid, d.Name, d.NativeName, d.SampleInterval, d.SampleRate, d.Iso841Class, where);
+                    var update = string.Format(UPDATE_FORMAT, d.Uuid, d.Name, d.NativeName, d.SampleInterval, d.SampleRate, d.Iso841Class, d.Manufacturer, d.Model, d.SerialNumber, d.Station, d.Description, where);
 
                     // Build Query string
                     query += string.Format(QUERY_FORMAT, where, insert, update) + Environment.NewLine;

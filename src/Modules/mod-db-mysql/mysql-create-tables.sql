@@ -70,6 +70,11 @@ CREATE TABLE IF NOT EXISTS `devices` (
 `sample_interval` double,
 `sample_rate` double,
 `iso_841_class` varchar(90),
+`manufacturer` varchar(180),
+`model` varchar(180),
+`serial_number` varchar(180),
+`station` varchar(180),
+`description` varchar(500),
 
 PRIMARY KEY (`device_id`, `agent_instance_id`),
 INDEX (`device_id`)

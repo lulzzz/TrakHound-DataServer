@@ -77,6 +77,11 @@ BEGIN
 	[sample_interval] float,
 	[sample_rate] float,
 	[iso_841_class] varchar(90),
+	[manufacturer] varchar(180),
+	[model] varchar(180),
+	[serial_number] varchar(180),
+	[station] varchar(180),
+	[description] varchar(500),
 
 	PRIMARY KEY ([device_id], [agent_instance_id]),
 	);

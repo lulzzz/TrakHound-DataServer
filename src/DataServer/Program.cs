@@ -12,7 +12,6 @@ using System.ServiceProcess;
 using System.Timers;
 using TrakHound.Api.v2;
 using TrakHound.DataServer.Streaming;
-using Messaging = TrakHound.Api.v2.Messaging;
 
 namespace TrakHound.DataServer
 {
@@ -103,15 +102,6 @@ namespace TrakHound.DataServer
                         throw ex;
                     }
 
-                    if (config.SendMessages)
-                    {
-                        // Start Menu Update Timer
-                        menuUpdateTimer = new Timer();
-                        menuUpdateTimer.Elapsed += UpdateMenuStatus;
-                        menuUpdateTimer.Interval = MENU_UPDATE_INTERVAL;
-                        menuUpdateTimer.Start();
-                    }
-
                     // Start the Sreaming Server
                     server = new StreamingServer(config);
                     server.Start();
@@ -161,12 +151,6 @@ namespace TrakHound.DataServer
             logger.Info("TrakHound DataServer : v" + Assembly.GetExecutingAssembly().GetName().Version.ToString());
             logger.Info(@"Copyright 2017 TrakHound Inc., All Rights Reserved");
             logger.Info("---------------------------");
-        }
-
-        private static void UpdateMenuStatus(object sender, ElapsedEventArgs e)
-        {
-            string status = started ? "Running" : "Stopped";
-            Messaging.Message.Send("trakhound-dataserver-menu", "Status", status);
         }
     }
 }

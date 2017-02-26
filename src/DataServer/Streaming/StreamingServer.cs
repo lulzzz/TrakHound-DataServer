@@ -14,7 +14,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using TrakHound.Api.v2.Devices;
 using TrakHound.Api.v2.Streams;
-using Messaging = TrakHound.Api.v2.Messaging;
 
 namespace TrakHound.DataServer.Streaming
 {
@@ -155,23 +154,11 @@ namespace TrakHound.DataServer.Streaming
             // Create new thread for listening for streaming connections
             thread = new Thread(new ThreadStart(Worker));
             thread.Start();
-
-            if (Configuration.SendMessages)
-            {
-                Messaging.Message.Send("trakhound-dataserver-menu", "Notify", "Started");
-                Messaging.Message.Send("trakhound-dataserver-menu", "Status", "Running");
-            }
         }
 
         public void Stop()
         {
             if (stop != null) stop.Set();
-
-            if (Configuration.SendMessages)
-            {
-                Messaging.Message.Send("trakhound-dataserver-menu", "Notify", "Stopped");
-                Messaging.Message.Send("trakhound-dataserver-menu", "Status", "Stopped");
-            }
         }
 
         private void Worker()

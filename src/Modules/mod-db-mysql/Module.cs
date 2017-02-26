@@ -216,7 +216,7 @@ namespace mod_db_mysql
         /// </summary>
         public DeviceDefinition ReadDevice(string deviceId, long agentInstanceId)
         {
-            string qf = "SELECT * FROM `devices` WHERE `device_id` = '{0}'  AND `agent_instance_id` = {1} LIMIT 1";
+            string qf = "SELECT * FROM `devices` WHERE `device_id` = '{0}' AND `agent_instance_id` = {1} LIMIT 1";
             string query = string.Format(qf, deviceId, agentInstanceId);
 
             return Read<DeviceDefinition>(query);
@@ -416,16 +416,16 @@ namespace mod_db_mysql
         {
             if (!definitions.IsNullOrEmpty())
             {
-                string COLUMNS = "`device_id`, `agent_instance_id`, `id`, `uuid`, `name`, `native_name`, `sample_interval`, `sample_rate`, `iso_841_class`";
+                string COLUMNS = "`device_id`, `agent_instance_id`, `id`, `uuid`, `name`, `native_name`, `sample_interval`, `sample_rate`, `iso_841_class`, `manufacturer`, `model`, `serial_number`, `station`, `description`";
                 string QUERY_FORMAT = "INSERT IGNORE INTO `devices` ({0}) VALUES {1}";
-                string VALUE_FORMAT = "('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}')";
+                string VALUE_FORMAT = "('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}','{13}')";
 
                 // Build VALUES string
                 var v = new string[definitions.Count];
                 for (var i = 0; i < definitions.Count; i++)
                 {
                     var d = definitions[i];
-                    v[i] = string.Format(VALUE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id, d.Uuid, d.Name, d.NativeName, d.SampleInterval, d.SampleRate, d.Iso841Class);
+                    v[i] = string.Format(VALUE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id, d.Uuid, d.Name, d.NativeName, d.SampleInterval, d.SampleRate, d.Iso841Class, d.Manufacturer, d.Model, d.SerialNumber, d.Station, d.Description);
                 }
                 string values = string.Join(",", v);
 
