@@ -21,6 +21,9 @@ namespace TrakHound.DataServer
         [XmlIgnore]
         public const string FILENAME = "server.config";
 
+        [XmlIgnore]
+        public const string DEFAULT_FILENAME = "server.config.default";
+
         [XmlElement("SslCertificatePath")]
         public string SslCertificatePath { get; set; }
 

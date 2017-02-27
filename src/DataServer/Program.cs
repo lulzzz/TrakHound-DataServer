@@ -87,6 +87,11 @@ namespace TrakHound.DataServer
                 PrintHeader();
 
                 string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Configuration.FILENAME);
+                string defaultPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Configuration.DEFAULT_FILENAME);
+                if (!File.Exists(configPath) && File.Exists(defaultPath))
+                {
+                    File.Copy(defaultPath, configPath);
+                }
                 var config = Configuration.Get(configPath);
                 if (config != null)
                 {
