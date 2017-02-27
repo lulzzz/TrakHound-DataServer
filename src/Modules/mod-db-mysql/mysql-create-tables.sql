@@ -122,75 +122,55 @@ PRIMARY KEY (`device_id`, `agent_instance_id`, `id`),
 INDEX (`device_id`)
 );
 
-# Create the Cutting Tool table
-CREATE TABLE IF NOT EXISTS `cutting_tools` (
+# Create the Status table
+CREATE TABLE IF NOT EXISTS `status` (
 
 `device_id` varchar(90) NOT NULL,
-`agent_instance_id` bigint NOT NULL,
-`asset_id` varchar(90) NOT NULL,
 `timestamp` bigint NOT NULL,
+`connected` int(1) DEFAULT 0 NOT NULL,
+`available` int(1) DEFAULT 0 NOT NULL,
 
-`tool_id` varchar(90),
-`serial_number` varchar(90),
-`manufacturers` varchar(90),
-`device_uuid` varchar(90),
-`removed` varchar(90),
-`description` varchar(90),
-
-PRIMARY KEY (`device_id`, `asset_id`, `timestamp`),
+PRIMARY KEY (`device_id`)
 );
 
-# Create the Cutting Tool Life Cycle table
-CREATE TABLE IF NOT EXISTS `cutting_tool_life_cycles` (
+DROP procedure IF EXISTS `checkStatus`;
 
-`device_id` varchar(90) NOT NULL,
-`agent_instance_id` bigint NOT NULL,
-`asset_id` varchar(90) NOT NULL,
-`timestamp` bigint NOT NULL,
+DELIMITER $$
+CREATE PROCEDURE `checkStatus`()
+BEGIN
 
-`cutter_status` varchar(300),
+DECLARE n INT DEFAULT 0;
+DECLARE i INT DEFAULT 1;
 
-`program_tool_group` varchar(90),
-`program_tool_number` int(10),
+DROP TABLE IF EXISTS `tmp_status`;
+CREATE TEMPORARY TABLE `tmp_status` (`x` int auto_increment, `device_id` varchar(90), PRIMARY KEY (`x`)) ENGINE=MEMORY;
+INSERT INTO `tmp_status` (`device_id`) SELECT `device_id` FROM `status` WHERE (`connected` = 1 OR `available` = 1) AND `timestamp` < ((UNIX_TIMESTAMP() * 1000) - 90000);
 
-`location` int(10),
-`location_type` varchar(90),
-`location_positive_overlap` int(10),
-`location_negative_overlap` int(10),
+-- Get the number of Ids
+SELECT COUNT(*) FROM `tmp_status` INTO n;
 
-`process_spindle_speed_maximum` int(10),
-`process_spindle_speed_minimum` int(10),
-`process_spindle_speed_nominal` int(10),
+WHILE i <= n DO
 
-`process_feedrate_maximum` int(10),
-`process_feedrate_minimum` int(10),
-`process_feedrate_nominal` int(10),
+	-- Set @id as the next Id
+	SELECT `device_id` FROM `tmp_status` WHERE `x` = i INTO @id;
+    
+    UPDATE `status` SET `timestamp`=(UNIX_TIMESTAMP() * 1000), `connected`=0, `available`=0 WHERE `device_id`=@id;
 
-`recondition_count` int(10),
-`recondition_count_maximum_count` int(10),
+    -- Increment index
+	SET i = i + 1;
+    
+END WHILE;
 
-`connection_code_machine_side` varchar(90),
+-- Clean up
+DROP TABLE IF EXISTS `tmp_status`;
 
-PRIMARY KEY (`device_id`, `asset_id`, `timestamp`),
-);
+END$$
 
-# Create the Cutting Tool Tool Life table
-CREATE TABLE IF NOT EXISTS `cutting_tool_tool_life` (
+DELIMITER ;
 
-`device_id` varchar(90) NOT NULL,
-`agent_instance_id` bigint NOT NULL,
-`asset_id` varchar(90) NOT NULL,
-`timestamp` bigint NOT NULL,
+DROP EVENT IF EXISTS `check_status`;
+CREATE EVENT `check_status`ON SCHEDULE EVERY 30 SECOND DO call checkStatus();
 
-`tool_life` bigint,
-`type` varchar(90),
-`count_direction` varchar(90),
-`warning` bigint,
-`limit` bigint,
-`initial` bigint,
-
-PRIMARY KEY (`device_id`, `asset_id`, `timestamp`),
-);
 
 
 

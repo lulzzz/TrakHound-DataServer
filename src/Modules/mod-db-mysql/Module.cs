@@ -306,6 +306,17 @@ namespace mod_db_mysql
             return samples;
         }
 
+        /// <summary>
+        /// Read the Status from the database
+        /// </summary>
+        public Status ReadStatus(string deviceId)
+        {
+            string qf = "SELECT * FROM `status` WHERE `device_id` = '{0}' LIMIT 1";
+            string query = string.Format(qf, deviceId);
+
+            return Read<Status>(query);
+        }
+
         #endregion
 
         #region "Write"
@@ -523,6 +534,35 @@ namespace mod_db_mysql
                 queries.AddRange(currentQueries);
 
                 string query = string.Join(";", queries);
+
+                return Write(query);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Write StatusData to the database
+        /// </summary>
+        public bool Write(List<StatusData> definitions)
+        {
+            if (!definitions.IsNullOrEmpty())
+            {
+                string COLUMNS = "`device_id`, `timestamp`, `connected`, `available`";
+                string QUERY_FORMAT = "INSERT INTO `status` ({0}) VALUES {1} ON DUPLICATE KEY UPDATE `timestamp`=VALUES(`timestamp`), `connected`=VALUES(`connected`), `available`=VALUES(`available`)";
+                string VALUE_FORMAT = "('{0}',{1},{2},{3})";
+
+                // Build VALUES string
+                var v = new string[definitions.Count];
+                for (var i = 0; i < definitions.Count; i++)
+                {
+                    var d = definitions[i];
+                    v[i] = string.Format(VALUE_FORMAT, d.DeviceId, d.Timestamp.ToUnixTime(), d.Connected ? 1 : 0, d.Available ? 1 : 0);
+                }
+                string values = string.Join(",", v);
+
+                // Build Query string
+                string query = string.Format(QUERY_FORMAT, COLUMNS, values);
 
                 return Write(query);
             }

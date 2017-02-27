@@ -114,6 +114,10 @@ namespace TrakHound.DataServer
                     var samples = streamData.OfType<SampleData>().ToList();
                     if (Database.Write(samples)) sentIds.AddRange(GetSentDataIds(samples.ToList<IStreamData>(), "Samples"));
 
+                    // Write Statuses to Database
+                    var statuses = streamData.OfType<StatusData>().ToList();
+                    if (Database.Write(statuses)) sentIds.AddRange(GetSentDataIds(statuses.ToList<IStreamData>(), "Status"));
+
                     if (sentIds.Count > 0)
                     {
                         // Remove written samples

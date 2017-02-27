@@ -236,7 +236,6 @@ namespace mod_db_sql
         {
             var samples = new List<Sample>();
 
-            //string COLUMNS = "[device_id],[id],[timestamp],[sequence],[cdata],[condition]";
             string COLUMNS = "*";
             string TABLENAME_ARCHIVED = "archived_samples";
             string TABLENAME_CURRENT = "current_samples";
@@ -311,6 +310,17 @@ namespace mod_db_sql
             foreach (var query in queries) samples.AddRange(ReadList<Sample>(query));
 
             return samples;
+        }
+
+        /// <summary>
+        /// Read the Status from the database
+        /// </summary>
+        public Status ReadStatus(string deviceId)
+        {
+            string qf = "SELECT TOP 1 * FROM [status] WHERE [device_id] = '{0}'";
+            string query = string.Format(qf, deviceId);
+
+            return Read<Status>(query);
         }
 
         #endregion
@@ -606,6 +616,44 @@ namespace mod_db_sql
             }
 
             return queries;
+        }
+
+        /// <summary>
+        /// Write StatusData to the database
+        /// </summary>
+        public bool Write(List<StatusData> statuses)
+        {
+            if (!statuses.IsNullOrEmpty())
+            {
+                string query = "";
+
+                string COLUMNS = "[device_id], [timestamp], [connected], [available]";
+
+                string QUERY_FORMAT = "IF NOT EXISTS(SELECT * FROM [status] WHERE {0}) BEGIN {1} END ELSE BEGIN {2} END";
+                string WHERE_FORMAT = "[device_id]='{0}'";
+                string INSERT_FORMAT = "INSERT INTO [status] ({0}) VALUES {1}";
+                string VALUE_FORMAT = "('{0}',{1},{2},{3})";
+                string UPDATE_FORMAT = "UPDATE [status] SET [timestamp]={0}, [connected]={1}, [available]={2}";
+
+                // Build VALUES string
+                var v = new string[statuses.Count];
+                for (var i = 0; i < statuses.Count; i++)
+                {
+                    var d = statuses[i];
+
+                    var where = string.Format(WHERE_FORMAT, d.DeviceId);
+                    var values = string.Format(VALUE_FORMAT, d.DeviceId, d.Timestamp, d.Connected, d.Available);
+                    var insert = string.Format(INSERT_FORMAT, COLUMNS, values);
+                    var update = string.Format(UPDATE_FORMAT, d.Timestamp, d.Connected, d.Available);
+
+                    // Build Query string
+                    query += string.Format(QUERY_FORMAT, where, insert, update) + Environment.NewLine;
+                }
+
+                return Write(query);
+            }
+
+            return false;
         }
 
         #endregion
