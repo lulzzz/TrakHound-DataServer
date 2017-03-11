@@ -333,6 +333,13 @@ namespace mod_db_mysql
             return false;
         }
 
+        private string EscapeString(string s)
+        {
+            if (!string.IsNullOrEmpty(s)) return MySqlHelper.EscapeString(s);
+
+            return s;
+        }
+
         /// <summary>
         /// Write ConnectionDefintions to the database
         /// </summary>
@@ -349,7 +356,11 @@ namespace mod_db_mysql
                 for (var i = 0; i < definitions.Count; i++)
                 {
                     var d = definitions[i];
-                    v[i] = string.Format(VALUE_FORMAT, d.DeviceId, d.Address, d.Port, d.PhysicalAddress);
+                    v[i] = string.Format(VALUE_FORMAT,
+                        EscapeString(d.DeviceId),
+                        EscapeString(d.Address), 
+                        d.Port,
+                        EscapeString(d.PhysicalAddress));
                 }
                 string values = string.Join(",", v);
 
@@ -378,7 +389,14 @@ namespace mod_db_mysql
                 for (var i = 0; i < definitions.Count; i++)
                 {
                     var d = definitions[i];
-                    v[i] = string.Format(VALUE_FORMAT, d.DeviceId, d.InstanceId, d.Sender, d.Version, d.BufferSize, d.TestIndicator, d.Timestamp.ToUnixTime());
+                    v[i] = string.Format(VALUE_FORMAT,
+                        EscapeString(d.DeviceId), 
+                        d.InstanceId,
+                        EscapeString(d.Sender),
+                        EscapeString(d.Version),
+                        d.BufferSize,
+                        EscapeString(d.TestIndicator), 
+                        d.Timestamp.ToUnixTime());
                 }
                 string values = string.Join(",", v);
 
@@ -407,7 +425,17 @@ namespace mod_db_mysql
                 for (var i = 0; i < definitions.Count; i++)
                 {
                     var d = definitions[i];
-                    v[i] = string.Format(VALUE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id, d.Uuid, d.Name, d.NativeName, d.SampleInterval, d.SampleRate, d.Type, d.ParentId);
+                    v[i] = string.Format(VALUE_FORMAT,
+                        EscapeString(d.DeviceId), 
+                        d.AgentInstanceId,
+                        EscapeString(d.Id),
+                        EscapeString(d.Uuid),
+                        EscapeString(d.Name),
+                        EscapeString(d.NativeName),
+                        d.SampleInterval,
+                        d.SampleRate,
+                        EscapeString(d.Type),
+                        EscapeString(d.ParentId));
                 }
                 string values = string.Join(",", v);
 
@@ -436,7 +464,21 @@ namespace mod_db_mysql
                 for (var i = 0; i < definitions.Count; i++)
                 {
                     var d = definitions[i];
-                    v[i] = string.Format(VALUE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id, d.Uuid, d.Name, d.NativeName, d.SampleInterval, d.SampleRate, d.Iso841Class, d.Manufacturer, d.Model, d.SerialNumber, d.Station, d.Description);
+                    v[i] = string.Format(VALUE_FORMAT,
+                        EscapeString(d.DeviceId),
+                        d.AgentInstanceId,
+                        EscapeString(d.Id),
+                        EscapeString(d.Uuid),
+                        EscapeString(d.Name),
+                        EscapeString(d.NativeName), 
+                        d.SampleInterval,
+                        d.SampleRate,
+                        EscapeString(d.Iso841Class),
+                        EscapeString(d.Manufacturer),
+                        EscapeString(d.Model),
+                        EscapeString(d.SerialNumber),
+                        EscapeString(d.Station),
+                        EscapeString(d.Description));
                 }
                 string values = string.Join(",", v);
 
@@ -465,7 +507,23 @@ namespace mod_db_mysql
                 for (var i = 0; i < definitions.Count; i++)
                 {
                     var d = definitions[i];
-                    v[i] = string.Format(VALUE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id, d.Name, d.Category, d.Type, d.SubType, d.Statistic, d.Units, d.NativeUnits, d.NativeScale, d.CoordinateSystem, d.SampleRate, d.Representation, d.SignificantDigits, d.ParentId);
+                    v[i] = string.Format(VALUE_FORMAT,
+                        EscapeString(d.DeviceId), 
+                        d.AgentInstanceId, 
+                        d.Id,
+                        EscapeString(d.Name),
+                        EscapeString(d.Category),
+                        EscapeString(d.Type),
+                        EscapeString(d.SubType),
+                        EscapeString(d.Statistic),
+                        EscapeString(d.Units),
+                        EscapeString(d.NativeUnits),
+                        EscapeString(d.NativeScale),
+                        EscapeString(d.CoordinateSystem),
+                        d.SampleRate,
+                        EscapeString(d.Representation),
+                        d.SignificantDigits,
+                        EscapeString(d.ParentId));
                 }
                 string values = string.Join(",", v);
 
@@ -499,13 +557,13 @@ namespace mod_db_mysql
                     var sample = archived[i];
 
                     values += string.Format(VALUE_FORMAT,
-                        sample.DeviceId,
-                        sample.Id,
+                        EscapeString(sample.DeviceId),
+                        EscapeString(sample.Id),
                         sample.Timestamp.ToUnixTime(),
                         sample.AgentInstanceId,
                         sample.Sequence,
-                        sample.CDATA,
-                        sample.Condition
+                        EscapeString(sample.CDATA),
+                        EscapeString(sample.Condition)
                         );
 
                     if (i < archived.Count - 1) values += ",";
@@ -519,8 +577,22 @@ namespace mod_db_mysql
                     var sample = samples.OrderBy(o => o.Timestamp).ToList().First(o => o.Id == id);
                     if (sample != null)
                     {
-                        string currentValues = string.Format(VALUE_FORMAT, sample.DeviceId, sample.Id, sample.Timestamp.ToUnixTime(), sample.AgentInstanceId, sample.Sequence, sample.CDATA, sample.Condition);
-                        string currentUpdate = string.Format(UPDATE_FORMAT, sample.Timestamp.ToUnixTime(), sample.AgentInstanceId, sample.Sequence, sample.CDATA, sample.Condition);
+                        string currentValues = string.Format(VALUE_FORMAT,
+                            EscapeString(sample.DeviceId),
+                            EscapeString(sample.Id), 
+                            sample.Timestamp.ToUnixTime(), 
+                            sample.AgentInstanceId, 
+                            sample.Sequence,
+                            EscapeString(sample.CDATA),
+                            EscapeString(sample.Condition));
+
+                        string currentUpdate = string.Format(UPDATE_FORMAT, 
+                            sample.Timestamp.ToUnixTime(), 
+                            sample.AgentInstanceId, 
+                            sample.Sequence,
+                            EscapeString(sample.CDATA),
+                            EscapeString(sample.Condition));
+
                         currentQueries.Add(string.Format(QUERY_FORMAT_CURRENT, COLUMNS, currentValues, currentUpdate));
                     }
                 }
@@ -557,7 +629,11 @@ namespace mod_db_mysql
                 for (var i = 0; i < definitions.Count; i++)
                 {
                     var d = definitions[i];
-                    v[i] = string.Format(VALUE_FORMAT, d.DeviceId, d.Timestamp.ToUnixTime(), d.Connected ? 1 : 0, d.Available ? 1 : 0);
+                    v[i] = string.Format(VALUE_FORMAT,
+                        EscapeString(d.DeviceId),
+                        d.Timestamp.ToUnixTime(), 
+                        d.Connected ? 1 : 0,
+                        d.Available ? 1 : 0);
                 }
                 string values = string.Join(",", v);
 
