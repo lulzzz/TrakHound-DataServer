@@ -37,6 +37,22 @@ namespace TrakHound.DataServer
         /// </summary>
         public int MaxSamplePerQuery { get; set; }
 
+        /// <summary>
+        /// Gets the Count of the underlying queue
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    if (queue != null) return queue.Count;
+                }
+
+                return -1;
+            }
+        }
+
 
         public DatabaseQueue()
         {
@@ -116,7 +132,20 @@ namespace TrakHound.DataServer
 
                     // Write Statuses to Database
                     var statuses = streamData.OfType<StatusData>().ToList();
-                    if (Database.Write(statuses)) sentIds.AddRange(GetSentDataIds(statuses.ToList<IStreamData>(), "Status"));
+                    if (statuses != null && statuses.Count > 0)
+                    {
+                        var newStatuses = new List<StatusData>();
+
+                        var deviceIds = statuses.Select(o => o.DeviceId).Distinct();
+                        foreach (var deviceId in deviceIds)
+                        {
+                            var status = statuses.FindAll(o => o.DeviceId == deviceId).OrderByDescending(o => o.Timestamp).First();
+                            newStatuses.Add(status);
+                        }
+
+                        if (Database.Write(newStatuses)) sentIds.AddRange(GetSentDataIds(newStatuses.ToList<IStreamData>(), "Status"));
+                    }
+
 
                     if (sentIds.Count > 0)
                     {

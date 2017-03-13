@@ -12,6 +12,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using Timers = System.Timers;
 using TrakHound.Api.v2.Devices;
 using TrakHound.Api.v2.Streams;
 
@@ -25,6 +26,7 @@ namespace TrakHound.DataServer.Streaming
         private const int AUTHENTICATION_INTERVAL = 10000;
 
         private static Logger log = LogManager.GetCurrentClassLogger();
+        private static Logger healthLog = LogManager.GetLogger("health-log");
         private static object _lock = new object();
 
         private TcpListener listener = null;
@@ -35,9 +37,11 @@ namespace TrakHound.DataServer.Streaming
 
         internal static Configuration Configuration;
 
-        private System.Timers.Timer authenticationTimer;
+        private Timers.Timer authenticationTimer;
         internal static List<ApiKey> AuthenticatedKeys = new List<ApiKey>();
         internal static List<ApiKey> UnauthenticatedKeys = new List<ApiKey>();
+
+        private Timers.Timer healthStatusTimer;
 
 
         /// <summary>
@@ -77,6 +81,31 @@ namespace TrakHound.DataServer.Streaming
             Timeout = 30000; // 30 Seconds
 
             LoadConfiguration(config);
+
+            healthStatusTimer = new Timers.Timer();
+            healthStatusTimer.Interval = 300000; // Five Minutes
+            healthStatusTimer.Elapsed += HealthStatusTimer_Elapsed;
+            healthStatusTimer.Start();
+        }
+
+        private void HealthStatusTimer_Elapsed(object sender, Timers.ElapsedEventArgs e)
+        {
+            healthLog.Info("Streaming Server Health Status --- " + DateTime.UtcNow.ToString("o"));
+
+            int queueCount = 0;
+            int authenticatedKeysCount = 0;
+            int unauthenticatedKeysCount = 0;
+
+            lock (_lock)
+            {
+                if (Queue != null) queueCount = Queue.Count;
+                if (AuthenticatedKeys != null) authenticatedKeysCount = AuthenticatedKeys.Count;
+                if (UnauthenticatedKeys != null) unauthenticatedKeysCount = UnauthenticatedKeys.Count;
+            }
+
+            healthLog.Info(string.Format("Database Queue : {0} Items", queueCount));
+            healthLog.Info(string.Format("Authenticated Keys : {0} Keys", authenticatedKeysCount));
+            healthLog.Info(string.Format("Unauthenticated Keys : {0} Keys", unauthenticatedKeysCount));
         }
 
         public void LoadConfiguration(Configuration config)
@@ -145,7 +174,7 @@ namespace TrakHound.DataServer.Streaming
             // Create authentication timer
             if (!string.IsNullOrEmpty(Configuration.AuthenticationUrl))
             {
-                authenticationTimer = new System.Timers.Timer();
+                authenticationTimer = new Timers.Timer();
                 authenticationTimer.Interval = AUTHENTICATION_INTERVAL;
                 authenticationTimer.Elapsed += AuthenticationTimer_Elapsed;
                 authenticationTimer.Start();
@@ -165,6 +194,7 @@ namespace TrakHound.DataServer.Streaming
         {
             do
             {
+                StopListener();
                 ListenForConnections();
 
             } while (!stop.WaitOne(5000, true));
@@ -228,6 +258,28 @@ namespace TrakHound.DataServer.Streaming
             }
         }
 
+        private void StopListener()
+        {
+            try
+            {
+                if (listener != null)
+                {
+                    listener.Stop();
+                    log.Info("StopListener() : Stop Successful!");
+                }
+            }
+            catch (SocketException ex)
+            {
+                log.Error(ex);
+                log.Info("StopListener() : Error Stopping Listener");
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
+                log.Info("StopListener() : Error Stopping Listener");
+            }
+        }
+
         private bool AllowEndPoint(IPEndPoint endpoint)
         {
             if (endpoint != null && (AllowedEndPoints != null || DeniedEndPoints != null))
@@ -253,7 +305,7 @@ namespace TrakHound.DataServer.Streaming
         {
             if (string.IsNullOrEmpty(Configuration.AuthenticationUrl) || ValidateApiKey(data))
             {
-                Queue.Add(data);
+                lock (_lock) Queue.Add(data);
                 return true;
             }
 
@@ -266,7 +318,7 @@ namespace TrakHound.DataServer.Streaming
             {
                 if (string.IsNullOrEmpty(Configuration.AuthenticationUrl) || ValidateApiKey(streamData))
                 {
-                    Queue.Add(streamData);
+                    lock (_lock) Queue.Add(streamData);
                     return true;
                 }
             }
