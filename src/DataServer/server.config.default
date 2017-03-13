@@ -2,6 +2,6 @@
 <DataServer port="8472">
 
   <!--Define the path to the database configuration file-->
-  <DatabaseConfigurationPath>sql.config</DatabaseConfigurationPath>
+  <DatabaseConfigurationPath>mysql.config</DatabaseConfigurationPath>
 
 </DataServer>

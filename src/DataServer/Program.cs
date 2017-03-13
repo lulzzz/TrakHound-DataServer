@@ -22,8 +22,6 @@ namespace TrakHound.DataServer
         private static Logger logger = LogManager.GetCurrentClassLogger();
         private static StreamingServer server;
         private static ServiceBase service;
-        private static Timer menuUpdateTimer;
-        private static bool started = false;
 
         /// <summary>
         /// The main entry point for the application.
@@ -110,34 +108,24 @@ namespace TrakHound.DataServer
                     // Start the Sreaming Server
                     server = new StreamingServer(config);
                     server.Start();
-
-                    started = true;
                 }
                 else
                 {
                     // Throw exception that no configuration file was found
                     var ex = new Exception("No Configuration File Found. Exiting TrakHound-DataServer!");
-                    logger.Error(ex);
+                    logger.Fatal(ex);
                     throw ex;
                 }
             }
             catch (Exception ex)
             {
-                logger.Error(ex);
+                logger.Fatal(ex);
             }
         }
 
         public static void Stop()
         {
-            if (menuUpdateTimer != null)
-            {
-                menuUpdateTimer.Stop();
-                menuUpdateTimer.Dispose();
-            }
-
             if (server != null) server.Stop();
-
-            started = false;
         }
 
         private static void InstallService()

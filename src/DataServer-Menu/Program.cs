@@ -22,7 +22,8 @@ namespace TrakHound.DataServer.Menu
         private static SystemTrayMenu menu;
         private static ManualResetEvent stop;
         private static System.Timers.Timer serviceStatusTimer;
-        private static ServiceControllerStatus previousStatus;
+
+        internal static ServiceControllerStatus ServiceStatus;
 
         /// <summary>
         /// The main entry point for the application.
@@ -59,7 +60,7 @@ namespace TrakHound.DataServer.Menu
             {
                 var status = sc.Status;
 
-                if (status != previousStatus)
+                if (status != ServiceStatus)
                 {
                     // Update Menu Status Label
                     SystemTrayMenu.SetHeader(status.ToString());
@@ -75,7 +76,7 @@ namespace TrakHound.DataServer.Menu
                     }
                 }
 
-                previousStatus = status;
+                ServiceStatus = status;
             }
         }
 
