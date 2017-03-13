@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using TrakHound.Api.v2;
 using TrakHound.Api.v2.Data;
+using TrakHound.Api.v2.Streams;
 using TrakHound.Api.v2.Streams.Data;
 
 namespace mod_db_sql
@@ -327,7 +328,7 @@ namespace mod_db_sql
 
         #region "Write"
 
-        private bool Write(string query)
+        private bool Write(SqlCommand command)
         {
             try
             {
@@ -336,11 +337,8 @@ namespace mod_db_sql
                 {
                     // Open the connection
                     connection.Open();
-
-                    using (var command = new SqlCommand(query, connection))
-                    {
-                        return command.ExecuteNonQuery() >= 0;
-                    }           
+                    command.Connection = connection;
+                    return command.ExecuteNonQuery() >= 0;
                 }
             }
             catch (Exception ex)
@@ -351,6 +349,7 @@ namespace mod_db_sql
             return false;
         }
 
+
         /// <summary>
         /// Write ConnectionDefintions to the database
         /// </summary>
@@ -358,32 +357,39 @@ namespace mod_db_sql
         {
             if (!definitions.IsNullOrEmpty())
             {
-                string query = "";
-
                 string COLUMNS = "[device_id], [address], [port], [physical_address]";
+                string VALUES = "(@deviceId, @address, @port, @physicalAddress)";
+                string UPDATE = "[address]=@address, [port]=@port, [physical_address]=@physicalAddress";
+                string WHERE = "[device_id]=@deviceId";
 
                 string QUERY_FORMAT = "IF NOT EXISTS(SELECT * FROM [connections] WHERE {0}) BEGIN {1} END ELSE BEGIN {2} END";
-                string WHERE_FORMAT = "[device_id]='{0}'";
                 string INSERT_FORMAT = "INSERT INTO [connections] ({0}) VALUES {1}";
-                string VALUE_FORMAT = "('{0}','{1}',{2},'{3}')";
-                string UPDATE_FORMAT = "UPDATE [connections] SET [address]='{0}', [port]={1}, [physical_address]='{2}'";
+                string UPDATE_FORMAT = "UPDATE [connections] SET {0} WHERE {1}";
 
-                // Build VALUES string
-                var v = new string[definitions.Count];
+                string insert = string.Format(INSERT_FORMAT, COLUMNS, VALUES);
+                string update = string.Format(UPDATE_FORMAT, UPDATE, WHERE);
+                string query = string.Format(QUERY_FORMAT, WHERE, insert, update);
+
+                bool success = false;
+
                 for (var i = 0; i < definitions.Count; i++)
                 {
                     var d = definitions[i];
 
-                    var where = string.Format(WHERE_FORMAT, d.DeviceId);
-                    var values = string.Format(VALUE_FORMAT, d.DeviceId, d.Address, d.Port, d.PhysicalAddress);
-                    var insert = string.Format(INSERT_FORMAT, COLUMNS, values);
-                    var update = string.Format(UPDATE_FORMAT, d.Address, d.Port, d.PhysicalAddress);
+                    using (var command = new SqlCommand(query))
+                    {
+                        command.Parameters.AddWithValue("@deviceId", d.DeviceId ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@address", d.Address ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@port", d.Port);
+                        command.Parameters.AddWithValue("@physicalAddress", d.PhysicalAddress ?? Convert.DBNull);
 
-                    // Build Query string
-                    query += string.Format(QUERY_FORMAT, where, insert, update) + Environment.NewLine;
+                        success = Write(command);
+                    }
+
+                    if (!success) break;
                 }
 
-                return Write(query);
+                return success;
             }
 
             return false;
@@ -396,32 +402,42 @@ namespace mod_db_sql
         {
             if (!definitions.IsNullOrEmpty())
             {
-                string query = "";
-
                 string COLUMNS = "[device_id], [instance_id], [sender], [version], [buffer_size], [test_indicator], [timestamp]";
+                string VALUES = "(@deviceId, @instanceId, @sender, @version, @bufferSize, @testIndicator, @timestamp)";
+                string UPDATE = "[instance_id]=@instanceId, [sender]=@sender, [version]=@version, [buffer_size]=@bufferSize, [test_indicator]=@testIndicator, [timestamp]=@timestamp";
+                string WHERE = "[device_id]=@deviceId";
 
                 string QUERY_FORMAT = "IF NOT EXISTS(SELECT * FROM [agents] WHERE {0}) BEGIN {1} END ELSE BEGIN {2} END";
-                string WHERE_FORMAT = "[device_id]='{0}' AND [instance_id]={1}";
                 string INSERT_FORMAT = "INSERT INTO [agents] ({0}) VALUES {1}";
-                string VALUE_FORMAT = "('{0}',{1},'{2}','{3}','{4}','{5}',{6})";
-                string UPDATE_FORMAT = "UPDATE [agents] SET [sender]='{0}', [version]='{1}', [buffer_size]='{2}', [test_indicator]='{3}', [timestamp]={4}";
+                string UPDATE_FORMAT = "UPDATE [agents] SET {0} WHERE {1}";
 
-                // Build VALUES string
-                var v = new string[definitions.Count];
+                var insert = string.Format(INSERT_FORMAT, COLUMNS, VALUES);
+                var update = string.Format(UPDATE_FORMAT, UPDATE, WHERE);
+                var query = string.Format(QUERY_FORMAT, WHERE, insert, update);
+
+                bool success = false;
+
                 for (var i = 0; i < definitions.Count; i++)
                 {
                     var d = definitions[i];
 
-                    var where = string.Format(WHERE_FORMAT, d.DeviceId, d.InstanceId);
-                    var values = string.Format(VALUE_FORMAT, d.DeviceId, d.InstanceId, d.Sender, d.Version, d.BufferSize, d.TestIndicator, d.Timestamp.ToUnixTime());
-                    var insert = string.Format(INSERT_FORMAT, COLUMNS, values);
-                    var update = string.Format(UPDATE_FORMAT, d.Sender, d.BufferSize, d.BufferSize, d.TestIndicator, d.Timestamp.ToUnixTime());
+                    using (var command = new SqlCommand(query))
+                    {
+                        command.Parameters.AddWithValue("@deviceId", d.DeviceId ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@instanceId", d.InstanceId);
+                        command.Parameters.AddWithValue("@sender", d.Sender ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@version", d.Version ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@bufferSize", d.BufferSize);
+                        command.Parameters.AddWithValue("@testIndicator", d.TestIndicator ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@timestamp", d.Timestamp.ToUnixTime());
 
-                    // Build Query string
-                    query += string.Format(QUERY_FORMAT, where, insert, update) + Environment.NewLine;
+                        success = Write(command);
+                    }
+
+                    if (!success) break;
                 }
 
-                return Write(query);
+                return success;
             }
 
             return false;
@@ -434,30 +450,45 @@ namespace mod_db_sql
         {
             if (!definitions.IsNullOrEmpty())
             {
-                string query = "";
-
                 string COLUMNS = "[device_id], [agent_instance_id], [id], [uuid], [name], [native_name], [sample_interval], [sample_rate], [type], [parent_id]";
+                string VALUES = "(@deviceId, @agentInstanceId, @id, @uuid, @name, @nativeName, @sampleInterval, @sampleRate, @type, @parentId)";
+                string UPDATE = "[uuid]=@uuid, [name]=@name, [native_name]=@nativeName, [sample_interval]=@sampleInterval, [sample_rate]=@sampleRate, [type]=@type, [parent_id]=@parentId";
+                string WHERE = "[device_id]=@deviceId AND [agent_instance_id]=@agentInstanceId AND [id]=@id";
 
                 string QUERY_FORMAT = "IF NOT EXISTS(SELECT * FROM [components] WHERE {0}) BEGIN {1} END ELSE BEGIN {2} END";
-                string WHERE_FORMAT = "[device_id]='{0}' AND [agent_instance_id]={1} AND [id]='{2}'";
                 string INSERT_FORMAT = "INSERT INTO [components] ({0}) VALUES {1}";
-                string VALUE_FORMAT = "('{0}',{1},'{2}','{3}','{4}','{5}',{6},{7},'{8}','{9}')";
-                string UPDATE_FORMAT = "UPDATE [components] SET [uuid]='{0}', [name]='{1}', [native_name]='{2}', [sample_interval]={3}, [sample_rate]={4}, [type]='{5}', [parent_id]='{6}' WHERE {7}";
+                string UPDATE_FORMAT = "UPDATE [components] SET {0} WHERE {1}";
+
+                string insert = string.Format(INSERT_FORMAT, COLUMNS, VALUES);
+                string update = string.Format(UPDATE_FORMAT, UPDATE, WHERE);
+                string query = string.Format(QUERY_FORMAT, WHERE, insert, update);
+
+                bool success = false;
 
                 for (var i = 0; i < definitions.Count; i++)
                 {
                     var d = definitions[i];
 
-                    var where = string.Format(WHERE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id);
-                    var values = string.Format(VALUE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id, d.Uuid, d.Name, d.NativeName, d.SampleInterval, d.SampleRate, d.Type, d.ParentId);
-                    var insert = string.Format(INSERT_FORMAT, COLUMNS, values);
-                    var update = string.Format(UPDATE_FORMAT, d.Uuid, d.Name, d.NativeName, d.SampleInterval, d.SampleRate, d.Type, d.ParentId, where);
+                    using (var command = new SqlCommand(query))
+                    {
+                        command.Parameters.AddWithValue("@deviceId", d.DeviceId ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@agentInstanceId", d.AgentInstanceId);
+                        command.Parameters.AddWithValue("@id", d.Id ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@uuid", d.Uuid ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@name", d.Name ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@nativeName", d.NativeName ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@sampleInterval", d.SampleInterval);
+                        command.Parameters.AddWithValue("@sampleRate", d.SampleRate);
+                        command.Parameters.AddWithValue("@type", d.Type ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@parentId", d.ParentId ?? Convert.DBNull);
 
-                    // Build Query string
-                    query += string.Format(QUERY_FORMAT, where, insert, update) + Environment.NewLine;
+                        success = Write(command);
+                    }
+
+                    if (!success) break;
                 }
 
-                return Write(query);
+                return success;
             }
 
             return false;
@@ -470,32 +501,49 @@ namespace mod_db_sql
         {
             if (!definitions.IsNullOrEmpty())
             {
-                string query = "";
-
                 string COLUMNS = "[device_id], [agent_instance_id], [id], [uuid], [name], [native_name], [sample_interval], [sample_rate], [iso_841_class], [manufacturer], [model], [serial_number], [station], [description]";
+                string VALUES = "(@deviceId, @agentInstanceId, @id, @uuid, @name, @nativeName, @sampleInterval, @sampleRate, @iso841Class, @manufacturer, @model, @serialNumber, @station, @description)";
+                string UPDATE = "[uuid]=@uuid, [name]=@name, [native_name]=@nativeName, [sample_interval]=@sampleInterval, [sample_rate]=@sampleRate, [iso_841_class]=@iso841Class, [manufacturer]=@manufacturer, [model]=@model, [serial_number]=@serialNumber, [station]=@station, [description]=@description";
+                string WHERE = "[device_id]=@deviceId AND [agent_instance_id]=@agentInstanceId AND [id]=@id";
 
                 string QUERY_FORMAT = "IF NOT EXISTS(SELECT * FROM [devices] WHERE {0}) BEGIN {1} END ELSE BEGIN {2} END";
-                string WHERE_FORMAT = "[device_id]='{0}' AND [agent_instance_id]={1} AND [id]='{2}'";
                 string INSERT_FORMAT = "INSERT INTO [devices] ({0}) VALUES {1}";
-                string VALUE_FORMAT = "('{0}',{1},'{2}','{3}','{4}','{5}',{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}')";
-                string UPDATE_FORMAT = "UPDATE [devices] SET [uuid]='{0}', [name]='{1}', [native_name]='{2}', [sample_interval]={3}, [sample_rate]={4}, [iso_841_class]='{5}', [manufacturer]='{6}', [model]='{7}', [serial_number]='{8}', [station]='{9}', [description]='{10}' WHERE {11}";
+                string UPDATE_FORMAT = "UPDATE [devices] SET {0} WHERE {1}";
 
-                // Build VALUES string
-                var v = new string[definitions.Count];
+                string insert = string.Format(INSERT_FORMAT, COLUMNS, VALUES);
+                string update = string.Format(UPDATE_FORMAT, UPDATE, WHERE);
+                string query = string.Format(QUERY_FORMAT, WHERE, insert, update);
+
+                bool success = false;
+
                 for (var i = 0; i < definitions.Count; i++)
                 {
                     var d = definitions[i];
 
-                    var where = string.Format(WHERE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id);
-                    var values = string.Format(VALUE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id, d.Uuid, d.Name, d.NativeName, d.SampleInterval, d.SampleRate, d.Iso841Class, d.Manufacturer, d.Model, d.SerialNumber, d.Station, d.Description);
-                    var insert = string.Format(INSERT_FORMAT, COLUMNS, values);
-                    var update = string.Format(UPDATE_FORMAT, d.Uuid, d.Name, d.NativeName, d.SampleInterval, d.SampleRate, d.Iso841Class, d.Manufacturer, d.Model, d.SerialNumber, d.Station, d.Description, where);
+                    using (var command = new SqlCommand(query))
+                    {
+                        command.Parameters.AddWithValue("@deviceId", d.DeviceId ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@agentInstanceId", d.AgentInstanceId);
+                        command.Parameters.AddWithValue("@id", d.Id ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@uuid", d.Uuid ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@name", d.Name ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@nativeName", d.NativeName ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@sampleInterval", d.SampleInterval);
+                        command.Parameters.AddWithValue("@sampleRate", d.SampleRate);
+                        command.Parameters.AddWithValue("@iso841Class", d.Iso841Class ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@manufacturer", d.Manufacturer ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@model", d.Model ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@serialNumber", d.SerialNumber ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@station", d.Station ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@description", d.Description ?? Convert.DBNull);
 
-                    // Build Query string
-                    query += string.Format(QUERY_FORMAT, where, insert, update) + Environment.NewLine;
+                        success = Write(command);
+                    }
+
+                    if (!success) break;
                 }
 
-                return Write(query);
+                return success;
             }
 
             return false;
@@ -508,32 +556,51 @@ namespace mod_db_sql
         {
             if (!definitions.IsNullOrEmpty())
             {
-                string query = "";
-
                 string COLUMNS = "[device_id], [agent_instance_id], [id], [name], [category], [type], [sub_type], [statistic], [units], [native_units], [native_scale], [coordinate_system], [sample_rate], [representation], [significant_digits], [parent_id]";
+                string VALUES = "(@deviceId, @agentInstanceId, @id, @name, @category, @type, @subType, @statistic, @units, @nativeUnits, @nativeScale, @coordinateSystem, @sampleRate, @representation, @significantDigits, @parentId)";
+                string UPDATE = "[name]=@name, [category]=@category, [type]=@type, [sub_type]=@subType, [statistic]=@statistic, [units]=@units, [native_units]=@nativeUnits, [native_scale]=@nativeScale, [coordinate_system]=@coordinateSystem, [sample_rate]=@sampleRate, [representation]=@representation, [significant_digits]=@significantDigits, [parent_id]=@parentId";
+                string WHERE = "[device_id]=@deviceId AND [agent_instance_id]=@agentInstanceId AND [id]=@id";
 
                 string QUERY_FORMAT = "IF NOT EXISTS(SELECT * FROM [data_items] WHERE {0}) BEGIN {1} END ELSE BEGIN {2} END";
-                string WHERE_FORMAT = "[device_id]='{0}' AND [agent_instance_id]={1} AND [id]='{2}'";
                 string INSERT_FORMAT = "INSERT INTO [data_items] ({0}) VALUES {1}";
-                string VALUE_FORMAT = "('{0}',{1},'{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}',{12},'{13}',{14},'{15}')";
-                string UPDATE_FORMAT = "UPDATE [data_items] SET [name]='{0}', [category]='{1}', [type]='{2}', [sub_type]='{3}', [statistic]='{4}', [units]='{5}', [native_units]='{6}', [native_scale]='{7}', [coordinate_system]='{8}', [sample_rate]={9}, [representation]='{10}', [significant_digits]={11}, [parent_id]='{12}' WHERE {13}";
+                string UPDATE_FORMAT = "UPDATE [data_items] SET {0} WHERE {1}";
 
-                // Build VALUES string
-                var v = new string[definitions.Count];
+                string insert = string.Format(INSERT_FORMAT, COLUMNS, VALUES);
+                string update = string.Format(UPDATE_FORMAT, UPDATE, WHERE);
+                string query = string.Format(QUERY_FORMAT, WHERE, insert, update);
+
+                bool success = false;
+
                 for (var i = 0; i < definitions.Count; i++)
                 {
                     var d = definitions[i];
 
-                    var where = string.Format(WHERE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id);
-                    var values = string.Format(VALUE_FORMAT, d.DeviceId, d.AgentInstanceId, d.Id, d.Name, d.Category, d.Type, d.SubType, d.Statistic, d.Units, d.NativeUnits, d.NativeScale, d.CoordinateSystem, d.SampleRate, d.Representation, d.SignificantDigits, d.ParentId);
-                    var insert = string.Format(INSERT_FORMAT, COLUMNS, values);
-                    var update = string.Format(UPDATE_FORMAT, d.Name, d.Category, d.Type, d.SubType, d.Statistic, d.Units, d.NativeUnits, d.NativeScale, d.CoordinateSystem, d.SampleRate, d.Representation, d.SignificantDigits, d.ParentId, where);
+                    using (var command = new SqlCommand(query))
+                    {
+                        command.Parameters.AddWithValue("@deviceId", d.DeviceId ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@agentInstanceId", d.AgentInstanceId);
+                        command.Parameters.AddWithValue("@id", d.Id ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@name", d.Name ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@category", d.Category ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@type", d.Type ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@subType", d.SubType ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@statistic", d.Statistic ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@units", d.Units ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@nativeUnits", d.NativeUnits ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@nativeScale", d.NativeScale ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@coordinateSystem", d.CoordinateSystem ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@sampleRate", d.SampleRate);
+                        command.Parameters.AddWithValue("@representation", d.Representation ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@significantDigits", d.SignificantDigits);
+                        command.Parameters.AddWithValue("@parentId", d.ParentId ?? Convert.DBNull);
 
-                    // Build Query string
-                    query += string.Format(QUERY_FORMAT, where, insert, update) + Environment.NewLine;
+                        success = Write(command);
+                    }
+
+                    if (!success) break;
                 }
 
-                return Write(query);
+                return success;
             }
             
             return false;
@@ -546,59 +613,73 @@ namespace mod_db_sql
         {
             var queries = new List<string>();
 
-            queries.AddRange(CreateArchivedSamplesQuery(samples));
-            queries.AddRange(CreateCurrentSamplesQuery(samples));
+            bool success = true;
 
-            if (!queries.IsNullOrEmpty()) {
+            WriteArchivedSamples(samples);
+            WriteCurrentSamples(samples);
 
-                return Write(string.Join(";", queries));
+            return success;
+        }
+
+        private bool WriteArchivedSamples(List<SampleData> samples)
+        {
+            if (!samples.IsNullOrEmpty())
+            {
+                string COLUMNS = "[device_id], [id], [timestamp], [agent_instance_id], [sequence], [cdata], [condition]";
+                string VALUES = "(@deviceId, @id, @timestamp, @agentInstanceId, @sequence, @cdata, @condition)";
+                string WHERE = "[device_id]=@deviceId AND [id]=@id AND [timestamp]=@timestamp";
+
+                string QUERY_FORMAT = "IF NOT EXISTS(SELECT * FROM [archived_samples] WHERE {0}) BEGIN {1} END";
+                string INSERT_FORMAT = "INSERT INTO [archived_samples] ({0}) VALUES {1}";
+
+                string insert = string.Format(INSERT_FORMAT, COLUMNS, VALUES);
+                string query = string.Format(QUERY_FORMAT, WHERE, insert);
+
+                bool success = true;
+
+                var archived = samples.FindAll(o => o.StreamDataType == StreamDataType.ARCHIVED_SAMPLE);
+                for (var i = 0; i < archived.Count; i++)
+                {
+                    var s = archived[i];
+
+                    using (var command = new SqlCommand(query))
+                    {
+                        command.Parameters.AddWithValue("@deviceId", s.DeviceId ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@id", s.Id ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@timestamp", s.Timestamp.ToUnixTime());
+                        command.Parameters.AddWithValue("@agentInstanceId", s.AgentInstanceId);
+                        command.Parameters.AddWithValue("@sequence", s.Sequence);
+                        command.Parameters.AddWithValue("@cdata", s.CDATA ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@condition", s.Condition ?? Convert.DBNull);
+
+                        success = Write(command);
+                    }
+                }
+
+                return success;
             }
 
             return false;
         }
 
-        private List<string> CreateArchivedSamplesQuery(List<SampleData> samples)
+        private bool WriteCurrentSamples(List<SampleData> samples)
         {
-            var queries = new List<string>();
-
             if (!samples.IsNullOrEmpty())
             {
                 string COLUMNS = "[device_id], [id], [timestamp], [agent_instance_id], [sequence], [cdata], [condition]";
-
-                string QUERY_FORMAT = "IF NOT EXISTS(SELECT * FROM [archived_samples] WHERE {0}) BEGIN {1} END";
-                string WHERE_FORMAT = "[device_id]='{0}' AND [id]='{1}' AND [timestamp]={2}";
-                string INSERT_FORMAT = "INSERT INTO [archived_samples] ({0}) VALUES {1}";
-                string VALUE_FORMAT = "('{0}','{1}',{2},{3},{4},'{5}','{6}')";
-
-                var v = new string[samples.Count];
-                for (var i = 0; i < samples.Count; i++)
-                {
-                    var s = samples[i];
-
-                    var where = string.Format(WHERE_FORMAT, s.DeviceId, s.Id, s.Timestamp.ToUnixTime());
-                    var values = string.Format(VALUE_FORMAT, s.DeviceId, s.Id, s.Timestamp.ToUnixTime(), s.AgentInstanceId, s.Sequence, s.CDATA, s.Condition);
-                    var insert = string.Format(INSERT_FORMAT, COLUMNS, values);
-
-                    queries.Add(string.Format(QUERY_FORMAT, where, insert));
-                }
-            }
-
-            return queries;
-        }
-
-        private List<string> CreateCurrentSamplesQuery(List<SampleData> samples)
-        {
-            var queries = new List<string>();
-
-            if (!samples.IsNullOrEmpty())
-            {
-                string COLUMNS = "[device_id], [id], [timestamp], [agent_instance_id], [sequence], [cdata], [condition]";
+                string VALUES = "(@deviceId, @id, @timestamp, @agentInstanceId, @sequence, @cdata, @condition)";
+                string UPDATE = "[timestamp]=@timestamp, [agent_instance_id]=@agentInstanceId, [sequence]=@sequence, [cdata]=@cdata, [condition]=@condition";
+                string WHERE = "[device_id]=@deviceId AND [id]=@id";
 
                 string QUERY_FORMAT = "IF NOT EXISTS(SELECT * FROM [current_samples] WHERE {0}) BEGIN {1} END ELSE BEGIN {2} END";
-                string WHERE_FORMAT = "[device_id]='{0}' AND [id]='{1}'";
                 string INSERT_FORMAT = "INSERT INTO [current_samples] ({0}) VALUES {1}";
-                string VALUE_FORMAT = "('{0}','{1}',{2},{3},{4},'{5}','{6}')";
-                string UPDATE_FORMAT = "UPDATE [current_samples] SET [timestamp]={0}, [agent_instance_id]={1}, [sequence]={2}, [cdata]='{3}', [condition]='{4}' WHERE {5}";
+                string UPDATE_FORMAT = "UPDATE [current_samples] SET {0} WHERE {1}";
+
+                string insert = string.Format(INSERT_FORMAT, COLUMNS, VALUES);
+                string update = string.Format(UPDATE_FORMAT, UPDATE, WHERE);
+                string query = string.Format(QUERY_FORMAT, WHERE, insert, update);
+
+                bool success = true;
 
                 var ids = samples.Select(o => o.Id).Distinct();
                 foreach (var id in ids)
@@ -606,16 +687,25 @@ namespace mod_db_sql
                     var sample = samples.OrderBy(o => o.Timestamp).ToList().First(o => o.Id == id);
                     if (sample != null)
                     {
-                        string where = string.Format(WHERE_FORMAT, sample.DeviceId, sample.Id);
-                        string values = string.Format(VALUE_FORMAT, sample.DeviceId, sample.Id, sample.Timestamp.ToUnixTime(), sample.AgentInstanceId, sample.Sequence, sample.CDATA, sample.Condition);
-                        string insert = string.Format(INSERT_FORMAT, COLUMNS, values);
-                        string update = string.Format(UPDATE_FORMAT, sample.Timestamp.ToUnixTime(), sample.AgentInstanceId, sample.Sequence, sample.CDATA, sample.Condition, where);
-                        queries.Add(string.Format(QUERY_FORMAT, where, insert, update));
+                        using (var command = new SqlCommand(query))
+                        {
+                            command.Parameters.AddWithValue("@deviceId", sample.DeviceId ?? Convert.DBNull);
+                            command.Parameters.AddWithValue("@id", sample.Id ?? Convert.DBNull);
+                            command.Parameters.AddWithValue("@timestamp", sample.Timestamp.ToUnixTime());
+                            command.Parameters.AddWithValue("@agentInstanceId", sample.AgentInstanceId);
+                            command.Parameters.AddWithValue("@sequence", sample.Sequence);
+                            command.Parameters.AddWithValue("@cdata", sample.CDATA ?? Convert.DBNull);
+                            command.Parameters.AddWithValue("@condition", sample.Condition ?? Convert.DBNull);
+
+                            success = Write(command);
+                        }
                     }
                 }
+
+                return success;
             }
 
-            return queries;
+            return false;
         }
 
         /// <summary>
@@ -625,32 +715,39 @@ namespace mod_db_sql
         {
             if (!statuses.IsNullOrEmpty())
             {
-                string query = "";
-
                 string COLUMNS = "[device_id], [timestamp], [connected], [available]";
+                string VALUES = "(@deviceId, @timestamp, @connected, @available)";
+                string UPDATE = "[timestamp]=@timestamp, [connected]=@connected, [available]=@available";
+                string WHERE = "[device_id]=@deviceId";
 
                 string QUERY_FORMAT = "IF NOT EXISTS(SELECT * FROM [status] WHERE {0}) BEGIN {1} END ELSE BEGIN {2} END";
-                string WHERE_FORMAT = "[device_id]='{0}'";
                 string INSERT_FORMAT = "INSERT INTO [status] ({0}) VALUES {1}";
-                string VALUE_FORMAT = "('{0}',{1},{2},{3})";
-                string UPDATE_FORMAT = "UPDATE [status] SET [timestamp]={0}, [connected]={1}, [available]={2}";
+                string UPDATE_FORMAT = "UPDATE [status] SET {0} WHERE {1}";
 
-                // Build VALUES string
-                var v = new string[statuses.Count];
+                string insert = string.Format(INSERT_FORMAT, COLUMNS, VALUES);
+                string update = string.Format(UPDATE_FORMAT, UPDATE, WHERE);
+                string query = string.Format(QUERY_FORMAT, WHERE, insert, update);
+
+                bool success = false;
+
                 for (var i = 0; i < statuses.Count; i++)
                 {
-                    var d = statuses[i];
+                    var s = statuses[i];
 
-                    var where = string.Format(WHERE_FORMAT, d.DeviceId);
-                    var values = string.Format(VALUE_FORMAT, d.DeviceId, d.Timestamp, d.Connected, d.Available);
-                    var insert = string.Format(INSERT_FORMAT, COLUMNS, values);
-                    var update = string.Format(UPDATE_FORMAT, d.Timestamp, d.Connected, d.Available);
+                    using (var command = new SqlCommand(query))
+                    {
+                        command.Parameters.AddWithValue("@deviceId", s.DeviceId ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@timestamp", s.Timestamp.ToUnixTime());
+                        command.Parameters.AddWithValue("@connected", s.Connected ? 1 : 0);
+                        command.Parameters.AddWithValue("@available", s.Available ? 1 : 0);
 
-                    // Build Query string
-                    query += string.Format(QUERY_FORMAT, where, insert, update) + Environment.NewLine;
+                        success = Write(command);
+                    }
+
+                    if (!success) break;
                 }
 
-                return Write(query);
+                return success;
             }
 
             return false;

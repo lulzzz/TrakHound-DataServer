@@ -11,11 +11,11 @@ IF (@fromTS > 0)
 ELSE 
 	SELECT TOP 1 @agentId = [instance_id] FROM [agents] WHERE [device_id] = @deviceId ORDER BY [timestamp];
 
-DROP TABLE IF EXISTS [tmpIds];
+IF OBJECT_ID('tempdb..##[#tmpIds]') IS NOT NULL DROP TABLE ##tmpIds;
 CREATE TABLE [#tmpIds] ([x] int IDENTITY(1,1), [id] varchar(90), PRIMARY KEY ([x]));
 INSERT INTO [#tmpIds] ([id]) SELECT [id] FROM [data_items] WHERE [device_id] = @deviceId AND [agent_instance_id] = @agentId;
 
-DROP TABLE IF EXISTS [tmpInstance];
+IF OBJECT_ID('tempdb..##[#tmpInstance]') IS NOT NULL DROP TABLE ##tmpInstance;
 SELECT TOP 0 * INTO [#tmpInstance] FROM [archived_samples];
 
 SELECT @n = COUNT(*) FROM [#tmpIds];
@@ -50,7 +50,7 @@ BEGIN
         INSERT INTO [#tmpInstance] ([agent_instance_id], [device_id], [id], [timestamp], [sequence], [cdata], [condition]) VALUES (@agentId, @deviceId, @id, @ts, @seq, @cdata, @cond);  
     END
 
-	DROP TABLE IF EXISTS [#tmpFound];
+	IF OBJECT_ID('tempdb..##[#tmpFound]') IS NOT NULL DROP TABLE ##tmpFound;
 
     -- Increment index
 	SET @i = @i + 1;
@@ -60,8 +60,8 @@ END
 SELECT * FROM [#tmpInstance];
 
 -- Clean up
-DROP TABLE IF EXISTS [#tmpInstance];
-DROP TABLE IF EXISTS [#tmpIds];
+IF OBJECT_ID('tempdb..##[#tmpInstance]') IS NOT NULL DROP TABLE ##tmpInstance;
+IF OBJECT_ID('tempdb..##[#tmpIds]') IS NOT NULL DROP TABLE ##tmpIds;
 
 GO
 

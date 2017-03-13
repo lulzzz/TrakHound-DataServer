@@ -63,6 +63,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="sql-create-checkstatus.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="sql-create-getinstance.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
