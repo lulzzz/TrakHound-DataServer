@@ -61,7 +61,7 @@ namespace TrakHound.DataServer
 
         public DatabaseQueue()
         {
-            Interval = 5000;
+            Interval = 500;
             RetryInterval = 5000;
             MaxSamplePerQuery = 2000;
 
@@ -210,15 +210,11 @@ namespace TrakHound.DataServer
 
                     if (sentIds.Count > 0)
                     {
-                        System.Console.WriteLine("SendIds.Count = " + sentIds.Count);
-
                         // Remove written samples
                         foreach (var id in sentIds)
                         {
                             lock (_lock) queue.RemoveAll(o => o.EntryId == id);
                         }
-
-                        System.Console.WriteLine("Queue.Count = " + queue.Count);
                     }
 
                     if (!success)
