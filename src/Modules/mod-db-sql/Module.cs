@@ -341,10 +341,8 @@ namespace mod_db_sql
                     return command.ExecuteNonQuery() >= 0;
                 }
             }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-            }
+            catch (SqlException ex) { logger.Warn(ex); }
+            catch (Exception ex) { logger.Error(ex); }
 
             return false;
         }
@@ -615,8 +613,8 @@ namespace mod_db_sql
 
             bool success = true;
 
-            WriteArchivedSamples(samples);
-            WriteCurrentSamples(samples);
+            success = WriteArchivedSamples(samples);
+            if (success) success = WriteCurrentSamples(samples);
 
             return success;
         }
@@ -654,12 +652,16 @@ namespace mod_db_sql
 
                         success = Write(command);
                     }
+
+                    if (!success) break;
                 }
 
                 return success;
             }
-
-            return false;
+            else
+            {
+                return true;
+            }
         }
 
         private bool WriteCurrentSamples(List<SampleData> samples)
@@ -700,12 +702,16 @@ namespace mod_db_sql
                             success = Write(command);
                         }
                     }
+
+                    if (!success) break;
                 }
 
                 return success;
             }
-
-            return false;
+            else
+            {
+                return true;
+            }
         }
 
         /// <summary>
