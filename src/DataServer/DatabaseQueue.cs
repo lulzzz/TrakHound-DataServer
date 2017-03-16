@@ -33,6 +33,11 @@ namespace TrakHound.DataServer
         public int Interval { get; set; }
 
         /// <summary>
+        /// Gets or Sets the interval at which the queue is read and queries are executed after a failure
+        /// </summary>
+        public int RetryInterval { get; set; }
+
+        /// <summary>
         /// Gets or Sets the maximum number of queries to read from the queue at a time
         /// </summary>
         public int MaxSamplePerQuery { get; set; }
@@ -56,7 +61,8 @@ namespace TrakHound.DataServer
 
         public DatabaseQueue()
         {
-            Interval = 200;
+            Interval = 5000;
+            RetryInterval = 5000;
             MaxSamplePerQuery = 2000;
 
             Start();
@@ -96,6 +102,8 @@ namespace TrakHound.DataServer
 
         private void Worker()
         {
+            int interval = Interval;
+
             do
             {
                 List<IStreamData> streamData = null;
@@ -106,33 +114,85 @@ namespace TrakHound.DataServer
                 {
                     var sentIds = new List<string>();
 
+                    bool success = true;
+
                     // Write ConnectionDefintions to Database
                     var connections = streamData.OfType<ConnectionDefinitionData>().ToList();
-                    if (Database.Write(connections)) sentIds.AddRange(GetSentDataIds(connections.ToList<IStreamData>(), "Connections"));
+                    if (success && !connections.IsNullOrEmpty())
+                    {
+                        if (Database.Write(connections)) sentIds.AddRange(GetSentDataIds(connections.ToList<IStreamData>(), "Connections"));
+                        else success = false;
+                    }
 
                     // Write AgentDefintions to Database
                     var agents = streamData.OfType<AgentDefinitionData>().ToList();
-                    if (Database.Write(agents)) sentIds.AddRange(GetSentDataIds(agents.ToList<IStreamData>(), "Agents"));
+                    if (success && !agents.IsNullOrEmpty())
+                    {
+                        if (Database.Write(agents)) sentIds.AddRange(GetSentDataIds(agents.ToList<IStreamData>(), "Agents"));
+                        else success = false;
+                    }
 
                     // Write ComponentDefinitions to Database
                     var components = streamData.OfType<ComponentDefinitionData>().ToList();
-                    if (Database.Write(components)) sentIds.AddRange(GetSentDataIds(components.ToList<IStreamData>(), "Components"));
+                    if (success && !components.IsNullOrEmpty())
+                    {
+                        if (Database.Write(components)) sentIds.AddRange(GetSentDataIds(components.ToList<IStreamData>(), "Components"));
+                        else success = false;
+                    }
 
                     // Write DataItems to Database
                     var dataItems = streamData.OfType<DataItemDefinitionData>().ToList();
-                    if (Database.Write(dataItems)) sentIds.AddRange(GetSentDataIds(dataItems.ToList<IStreamData>(), "DataItems"));
+                    if (success && !dataItems.IsNullOrEmpty())
+                    {
+                        if (Database.Write(dataItems)) sentIds.AddRange(GetSentDataIds(dataItems.ToList<IStreamData>(), "DataItems"));
+                        else success = false;
+                    }
 
                     // Write DeviceDefinitions to Database
                     var devices = streamData.OfType<DeviceDefinitionData>().ToList();
-                    if (Database.Write(devices)) sentIds.AddRange(GetSentDataIds(devices.ToList<IStreamData>(), "Devices"));
+                    if (success && !devices.IsNullOrEmpty())
+                    {
+                        if (Database.Write(devices)) sentIds.AddRange(GetSentDataIds(devices.ToList<IStreamData>(), "Devices"));
+                        else success = false;
+                    }
 
                     // Write Samples to Database
                     var samples = streamData.OfType<SampleData>().ToList();
-                    if (Database.Write(samples)) sentIds.AddRange(GetSentDataIds(samples.ToList<IStreamData>(), "Samples"));
+                    if (success && !samples.IsNullOrEmpty())
+                    {
+                        var newSamples = new List<SampleData>();
+
+                        // Only add the newest CURRENT_SAMPLE data
+                        var deviceIds = samples.FindAll(o => o.StreamDataType == StreamDataType.CURRENT_SAMPLE).Select(o => o.DeviceId).Distinct();
+                        foreach (var deviceId in deviceIds)
+                        {
+                            var dataItemIds = samples.FindAll(o => o.StreamDataType == StreamDataType.CURRENT_SAMPLE && o.DeviceId == deviceId).Select(o => o.Id).Distinct();
+                            foreach (var dataItemId in dataItemIds)
+                            {
+                                var sample = samples.FindAll(o => o.DeviceId == deviceId && o.Id == dataItemId).OrderByDescending(o => o.Timestamp).First();
+                                newSamples.Add(sample);
+                            }
+
+                            // Clear the unused CURRENT_SAMPLE data from the queue
+                            foreach (var sample in samples)
+                            {
+                                if (!newSamples.Exists(o => o.EntryId == sample.EntryId))
+                                {
+                                    lock (_lock) queue.RemoveAll(o => o.EntryId == sample.EntryId);
+                                }
+                            }
+                        }
+
+                        // Add any ARCHIVE_SAMPLE data
+                        newSamples.AddRange(samples.FindAll(o => o.StreamDataType == StreamDataType.ARCHIVED_SAMPLE));
+
+                        if (Database.Write(newSamples)) sentIds.AddRange(GetSentDataIds(newSamples.ToList<IStreamData>(), "Samples"));
+                        else success = false;
+                    }
 
                     // Write Statuses to Database
                     var statuses = streamData.OfType<StatusData>().ToList();
-                    if (statuses != null && statuses.Count > 0)
+                    if (success && statuses != null && statuses.Count > 0)
                     {
                         var newStatuses = new List<StatusData>();
 
@@ -144,20 +204,32 @@ namespace TrakHound.DataServer
                         }
 
                         if (Database.Write(newStatuses)) sentIds.AddRange(GetSentDataIds(newStatuses.ToList<IStreamData>(), "Status"));
+                        else success = false;
                     }
 
 
                     if (sentIds.Count > 0)
                     {
+                        System.Console.WriteLine("SendIds.Count = " + sentIds.Count);
+
                         // Remove written samples
                         foreach (var id in sentIds)
                         {
                             lock (_lock) queue.RemoveAll(o => o.EntryId == id);
                         }
+
+                        System.Console.WriteLine("Queue.Count = " + queue.Count);
                     }
+
+                    if (!success)
+                    {
+                        interval = RetryInterval;
+                        log.Info("Queue Failed to Send Successfully : Retrying in " + RetryInterval + "ms");
+                    }
+                    else interval = Interval;
                 }
 
-            } while (!stop.WaitOne(Interval, true));
+            } while (!stop.WaitOne(interval, true));
         }
 
         private List<string> GetSentDataIds(List<IStreamData> sentData, string tag)
