@@ -327,7 +327,7 @@ namespace mod_db_mysql
             {
                 return MySqlHelper.ExecuteNonQuery(connectionString, query, null) >= 0;
             }
-            catch (MySqlException ex) { logger.Error(ex); }
+            catch (MySqlException ex) { logger.Warn(ex); }
             catch (Exception ex) { logger.Error(ex); }
 
             return false;
