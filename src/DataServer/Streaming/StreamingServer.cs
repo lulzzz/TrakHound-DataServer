@@ -198,6 +198,8 @@ namespace TrakHound.DataServer.Streaming
                 ListenForConnections();
 
             } while (!stop.WaitOne(5000, true));
+
+            log.Error("Worker() : STOPPED!");
         }
 
         private void ListenForConnections()
@@ -271,12 +273,12 @@ namespace TrakHound.DataServer.Streaming
             catch (SocketException ex)
             {
                 log.Error(ex);
-                log.Info("StopListener() : Error Stopping Listener");
+                log.Error("StopListener() : Error Stopping Listener");
             }
             catch (Exception ex)
             {
                 log.Error(ex);
-                log.Info("StopListener() : Error Stopping Listener");
+                log.Error("StopListener() : Error Stopping Listener");
             }
         }
 

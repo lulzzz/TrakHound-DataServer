@@ -72,7 +72,7 @@ namespace TrakHound.DataServer.Streaming
         {
             stop = new ManualResetEvent(false);
 
-            GetStream();
+            OpenStream();
             if (streamReader == null)
             {
                 logger.Warn(EndPoint.ToString() + " : No Stream Found");
@@ -84,16 +84,14 @@ namespace TrakHound.DataServer.Streaming
         public void Stop()
         {
             stop.Set();
-            if (stream != null) stream.Close();
-            if (_client != null) _client.Close();
+            CloseStream();
         }
 
         
         private static bool RemoteCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             //Return true if the server certificate is ok
-            if (sslPolicyErrors == SslPolicyErrors.None)
-                return true;
+            if (sslPolicyErrors == SslPolicyErrors.None) return true;
 
             bool acceptCertificate = true;
             string msg = "The server could not be validated for the following reason(s):\r\n";
@@ -138,15 +136,15 @@ namespace TrakHound.DataServer.Streaming
             if (acceptCertificate == false)
             {
                 msg = msg + "\r\nDo you wish to override the security check?";
-                //          if (MessageBox.Show(msg, "Security Alert: Server could not be validated",
-                //                       MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1) == DialogResult.Yes)
                 acceptCertificate = true;
             }
+
+            logger.Debug(msg);
 
             return acceptCertificate;
         }
 
-        private void GetStream()
+        private void OpenStream()
         {
             try
             {
@@ -172,6 +170,25 @@ namespace TrakHound.DataServer.Streaming
             catch (Exception ex)
             {
                 logger.Error(ex);
+            }
+        }
+
+        private void CloseStream()
+        {
+            // Dispose of the Stream
+            if (stream != null)
+            {
+                stream.Flush();
+                stream.Dispose();
+            }
+
+            if (streamReader != null) streamReader.Dispose();
+            if (streamWriter != null) streamWriter.Dispose();
+
+            // Close the Client
+            if (_client != null)
+            {
+                _client.Close();
             }
         }
 
@@ -224,7 +241,7 @@ namespace TrakHound.DataServer.Streaming
             }
             finally
             {
-                if (stream != null) stream.Close();
+                CloseStream();
                 logger.Info(EndPoint.ToString() + " : Stream Closed");
             }
         }
