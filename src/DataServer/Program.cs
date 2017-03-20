@@ -80,6 +80,9 @@ namespace TrakHound.DataServer
 
         public static void Start()
         {
+            var currentDomain = AppDomain.CurrentDomain;
+            currentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
             try
             {
                 PrintHeader();
@@ -121,6 +124,11 @@ namespace TrakHound.DataServer
             {
                 logger.Fatal(ex);
             }
+        }
+
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            logger.Fatal(e.ExceptionObject);
         }
 
         public static void Stop()
