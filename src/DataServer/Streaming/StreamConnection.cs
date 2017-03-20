@@ -163,6 +163,10 @@ namespace TrakHound.DataServer.Streaming
                 streamReader = new StreamReader(stream);
                 streamWriter = new StreamWriter(stream);
             }
+            catch (IOException ex)
+            {
+                logger.Warn(ex, EndPoint.ToString() + " : IO Exception - closing the connection.");
+            }
             catch (System.Security.Authentication.AuthenticationException ex)
             {
                 logger.Error(ex, EndPoint.ToString() + " : Authentication failed - closing the connection.");
@@ -178,17 +182,40 @@ namespace TrakHound.DataServer.Streaming
             // Dispose of the Stream
             if (stream != null)
             {
-                stream.Flush();
-                stream.Dispose();
+                try
+                {
+                    stream.Flush();
+                    stream.Dispose();
+                }
+                catch(Exception ex) { }
             }
 
-            if (streamReader != null) streamReader.Dispose();
-            if (streamWriter != null) streamWriter.Dispose();
+            if (streamReader != null)
+            {
+                try
+                {
+                    streamReader.Dispose();
+                }
+                catch (Exception ex) { }
+            }
+
+            if (streamWriter != null)
+            {
+                try
+                {
+                    streamWriter.Dispose();
+                }
+                catch (Exception ex) { }
+            }
 
             // Close the Client
             if (_client != null)
             {
-                _client.Close();
+                try
+                {
+                    _client.Close();
+                }
+                catch (Exception ex) { }
             }
         }
 
