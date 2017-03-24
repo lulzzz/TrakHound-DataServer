@@ -310,6 +310,8 @@ namespace mod_db_sql
 
             foreach (var query in queries) samples.AddRange(ReadList<Sample>(query));
 
+            if (!dataItemIds.IsNullOrEmpty()) samples = samples.FindAll(o => dataItemIds.ToList().Exists(x => x == o.Id));
+
             return samples;
         }
 
