@@ -20,7 +20,7 @@ namespace mod_db_mysql
     [InheritedExport(typeof(IDatabaseModule))]
     public class Module : IDatabaseModule
     {
-        private const string CONNECTION_FORMAT = "server={0};uid={1};pwd={2};database={3};";
+        private const string CONNECTION_FORMAT = "server={0};uid={1};pwd={2};database={3};default command timeout=10;";
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
         private static string connectionString;
@@ -229,7 +229,6 @@ namespace mod_db_mysql
         {
             var samples = new List<Sample>();
 
-            //string COLUMNS = "`device_id`, `agent_instance_id`, `id`,`timestamp`,`sequence`,`cdata`,`condition`";
             string COLUMNS = "*";
             string TABLENAME_ARCHIVED = "archived_samples";
             string TABLENAME_CURRENT = "current_samples";
@@ -258,19 +257,19 @@ namespace mod_db_mysql
                 string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}' AND `timestamp` >= '{4}' AND `timestamp` <= '{5}'";
                 queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, from.ToUnixTime(), to.ToUnixTime()));
             }
-            else if (from > DateTime.MinValue && count > 0)
+            else if (from > DateTime.MinValue)
             {
                 queries.Add(string.Format(INSTANCE_FORMAT, deviceId, from.ToUnixTime()));
 
                 string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}' AND `timestamp` >= '{4}' LIMIT {5}";
-                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, from.ToUnixTime(), count));
+                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, from.ToUnixTime(), count == 0 ? 1000 : count));
             }
-            else if (to > DateTime.MinValue && count > 0)
+            else if (to > DateTime.MinValue)
             {
                 queries.Add(string.Format(INSTANCE_FORMAT, deviceId, to.ToUnixTime()));
 
                 string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}' AND `timestamp` <= '{4}' LIMIT {5}";
-                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, to.ToUnixTime(), count));
+                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, to.ToUnixTime(), count == 0 ? 1000 : count));
             }
             else if (from > DateTime.MinValue)
             {
@@ -303,6 +302,8 @@ namespace mod_db_mysql
 
             foreach (var query in queries) samples.AddRange(ReadList<Sample>(query));
 
+            if (!dataItemIds.IsNullOrEmpty()) samples = samples.FindAll(o => dataItemIds.ToList().Exists(x => x == o.Id));
+
             return samples;
         }
 
@@ -323,12 +324,27 @@ namespace mod_db_mysql
 
         private bool Write(string query)
         {
-            try
+            if (!string.IsNullOrEmpty(query))
             {
-                return MySqlHelper.ExecuteNonQuery(connectionString, query, null) >= 0;
+                try
+                {
+                    // Create a new SqlConnection using the connectionString
+                    using (var connection = new MySqlConnection(connectionString))
+                    {
+                        // Open the connection
+                        connection.Open();
+
+                        using (MySqlCommand command = new MySqlCommand(query, connection))
+                        {
+                            // Execute the query
+                            return command.ExecuteNonQuery() >= 0;
+                        }
+                    }
+                }
+                catch (NullReferenceException ex) { logger.Debug(ex); }
+                catch (MySqlException ex) { logger.Warn(ex); }
+                catch (Exception ex) { logger.Error(ex); }
             }
-            catch (MySqlException ex) { logger.Warn(ex); }
-            catch (Exception ex) { logger.Error(ex); }
 
             return false;
         }
