@@ -126,11 +126,6 @@ namespace TrakHound.DataServer
             }
         }
 
-        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            logger.Fatal(e.ExceptionObject);
-        }
-
         public static void Stop()
         {
             if (server != null) server.Stop();
@@ -145,7 +140,12 @@ namespace TrakHound.DataServer
         {
             ManagedInstallerClass.InstallHelper(new string[] { "/u", Assembly.GetExecutingAssembly().Location });
         }
-        
+
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            logger.Fatal(e.ExceptionObject);
+        }
+
         private static void PrintHeader()
         {
             logger.Info("---------------------------");
