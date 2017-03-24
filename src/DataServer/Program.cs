@@ -9,7 +9,6 @@ using System.Configuration.Install;
 using System.IO;
 using System.Reflection;
 using System.ServiceProcess;
-using System.Timers;
 using TrakHound.Api.v2;
 using TrakHound.DataServer.Streaming;
 
@@ -17,8 +16,6 @@ namespace TrakHound.DataServer
 {
     static class Program
     {
-        private const int MENU_UPDATE_INTERVAL = 2000;
-
         private static Logger logger = LogManager.GetCurrentClassLogger();
         private static StreamingServer server;
         private static ServiceBase service;
