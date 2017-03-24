@@ -257,19 +257,19 @@ namespace mod_db_mysql
                 string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}' AND `timestamp` >= '{4}' AND `timestamp` <= '{5}'";
                 queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, from.ToUnixTime(), to.ToUnixTime()));
             }
-            else if (from > DateTime.MinValue)
+            else if (from > DateTime.MinValue && count > 0)
             {
                 queries.Add(string.Format(INSTANCE_FORMAT, deviceId, from.ToUnixTime()));
 
                 string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}' AND `timestamp` >= '{4}' LIMIT {5}";
-                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, from.ToUnixTime(), count == 0 ? 1000 : count));
+                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, from.ToUnixTime(), count));
             }
-            else if (to > DateTime.MinValue)
+            else if (to > DateTime.MinValue && count > 0)
             {
                 queries.Add(string.Format(INSTANCE_FORMAT, deviceId, to.ToUnixTime()));
 
                 string qf = "SELECT {0} FROM `{1}` WHERE {2}`device_id` = '{3}' AND `timestamp` <= '{4}' LIMIT {5}";
-                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, to.ToUnixTime(), count == 0 ? 1000 : count));
+                queries.Add(string.Format(qf, COLUMNS, TABLENAME_ARCHIVED, dataItemFilter, deviceId, to.ToUnixTime(), count));
             }
             else if (from > DateTime.MinValue)
             {
