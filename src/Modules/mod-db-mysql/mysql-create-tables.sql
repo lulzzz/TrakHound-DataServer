@@ -58,6 +58,19 @@ PRIMARY KEY (`device_id`, `instance_id`),
 INDEX (`device_id`)
 );
 
+# Create the Assets table
+CREATE TABLE IF NOT EXISTS `assets` (
+
+`device_id` varchar(90) NOT NULL,
+`id` varchar(90) NOT NULL,
+`timestamp` bigint NOT NULL,
+`agent_instance_id` bigint,
+`type` varchar(90) NOT NULL,
+`xml` blob NOT NULL,
+
+PRIMARY KEY (`device_id`, `id`, `timestamp`)
+);
+
 # Create the Devices table
 CREATE TABLE IF NOT EXISTS `devices` (
 

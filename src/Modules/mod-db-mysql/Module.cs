@@ -20,7 +20,7 @@ namespace mod_db_mysql
     [InheritedExport(typeof(IDatabaseModule))]
     public class Module : IDatabaseModule
     {
-        private const string CONNECTION_FORMAT = "server={0};uid={1};pwd={2};database={3};default command timeout=10;";
+        private const string CONNECTION_FORMAT = "server={0};uid={1};pwd={2};database={3};default command timeout=300;";
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
         private static string connectionString;
@@ -166,6 +166,68 @@ namespace mod_db_mysql
             string query = string.Format(qf, deviceId);
 
             return Read<AgentDefinition>(query);
+        }
+
+        /// <summary>
+        /// Read Samples from the database
+        /// </summary>
+        public List<AssetDefinition> ReadAssets(string deviceId, string assetId, DateTime from, DateTime to, DateTime at, long count)
+        {
+            var assets = new List<AssetDefinition>();
+
+            string COLUMNS = "*";
+            string TABLENAME = "assets";
+
+            string assetFilter = "";
+            if (!string.IsNullOrEmpty(assetFilter)) assetFilter = " AND `id`='" + assetId + "'";
+
+            string query = null;
+
+            // Create query
+            if (from > DateTime.MinValue && to > DateTime.MinValue)
+            {
+                string qf = "SELECT {0} FROM `{1}` WHERE `device_id` = '{2}'{3} AND `timestamp` >= '{4}' AND `timestamp` <= '{5}'";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, from.ToUnixTime(), to.ToUnixTime());
+            }
+            else if (from > DateTime.MinValue && count > 0)
+            {
+                string qf = "SELECT {0} FROM `{1}` WHERE `device_id` = '{2}'{3} AND `timestamp` >= '{4}' LIMIT {5}";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, from.ToUnixTime(), count);
+            }
+            else if (to > DateTime.MinValue && count > 0)
+            {
+                string qf = "SELECT {0} FROM `{1}` WHERE `device_id` = '{2}'{3} AND `timestamp` <= '{4}' LIMIT {5}";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, to.ToUnixTime(), count);
+            }
+            else if (from > DateTime.MinValue)
+            {
+                string qf = "SELECT {0} FROM `{1}` WHERE `device_id` = '{2}'{3} AND `timestamp` >= '{4}' LIMIT 1000";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, from.ToUnixTime(), count);
+            }
+            else if (to > DateTime.MinValue)
+            {
+                string qf = "SELECT {0} FROM `{1}` WHERE `device_id` = '{2}'{3} AND `timestamp` <= '{4}' LIMIT 1000";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, to.ToUnixTime(), count);
+            }
+            else if (count > 0)
+            {
+                string qf = "SELECT {0} FROM `{1}` WHERE `device_id` = '{2}'{3} ORDER BY `timestamp` DESC LIMIT {4}";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, count);
+            }
+            else if (at > DateTime.MinValue)
+            {
+                string qf = "SELECT {0} FROM `{1}` WHERE `device_id` = '{2}'{3} AND `timestamp` = '{4}'";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, at.ToUnixTime());
+            }
+            else
+            {
+                string qf = "SELECT {0} FROM `{1}` WHERE `device_id` = '{2}'{3}";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter);
+            }
+
+            if (!string.IsNullOrEmpty(query)) assets = ReadList<AssetDefinition>(query);
+
+            return assets;
         }
 
         /// <summary>
@@ -342,6 +404,7 @@ namespace mod_db_mysql
                     }
                 }
                 catch (NullReferenceException ex) { logger.Debug(ex); }
+                catch (TimeoutException ex) { logger.Debug(ex); }
                 catch (MySqlException ex) { logger.Warn(ex); }
                 catch (Exception ex) { logger.Error(ex); }
             }
@@ -413,6 +476,41 @@ namespace mod_db_mysql
                         d.BufferSize,
                         EscapeString(d.TestIndicator), 
                         d.Timestamp.ToUnixTime());
+                }
+                string values = string.Join(",", v);
+
+                // Build Query string
+                string query = string.Format(QUERY_FORMAT, COLUMNS, values);
+
+                return Write(query);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Write AssetDefintions to the database
+        /// </summary>
+        public bool Write(List<AssetDefinitionData> definitions)
+        {
+            if (!definitions.IsNullOrEmpty())
+            {
+                string COLUMNS = "`device_id`, `id`, `timestamp`, `agent_instance_id`, `type`, `xml`";
+                string QUERY_FORMAT = "INSERT IGNORE INTO `assets` ({0}) VALUES {1}";
+                string VALUE_FORMAT = "('{0}','{1}',{2},{3},'{4}','{5}')";
+
+                // Build VALUES string
+                var v = new string[definitions.Count];
+                for (var i = 0; i < definitions.Count; i++)
+                {
+                    var d = definitions[i];
+                    v[i] = string.Format(VALUE_FORMAT,
+                        EscapeString(d.DeviceId),
+                        EscapeString(d.Id),
+                        d.Timestamp.ToUnixTime(),
+                        d.AgentInstanceId,
+                        EscapeString(d.Type),
+                        EscapeString(d.Xml));
                 }
                 string values = string.Join(",", v);
 

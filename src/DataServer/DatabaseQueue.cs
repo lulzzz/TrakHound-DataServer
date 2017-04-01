@@ -61,7 +61,7 @@ namespace TrakHound.DataServer
 
         public DatabaseQueue()
         {
-            Interval = 500;
+            Interval = 200;
             RetryInterval = 5000;
             MaxSamplePerQuery = 2000;
 
@@ -129,6 +129,14 @@ namespace TrakHound.DataServer
                     if (success && !agents.IsNullOrEmpty())
                     {
                         if (Database.Write(agents)) sentIds.AddRange(GetSentDataIds(agents.ToList<IStreamData>(), "Agents"));
+                        else success = false;
+                    }
+
+                    // Write AssetDefintions to Database
+                    var assets = streamData.OfType<AssetDefinitionData>().ToList();
+                    if (success && !assets.IsNullOrEmpty())
+                    {
+                        if (Database.Write(assets)) sentIds.AddRange(GetSentDataIds(assets.ToList<IStreamData>(), "Assets"));
                         else success = false;
                     }
 

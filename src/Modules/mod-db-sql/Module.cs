@@ -177,6 +177,69 @@ namespace mod_db_sql
         }
 
         /// <summary>
+        /// Read AssetDefintions from the database
+        /// </summary>
+        public List<AssetDefinition> ReadAssets(string deviceId, string assetId, DateTime from, DateTime to, DateTime at, long count)
+        {
+            var assets = new List<AssetDefinition>();
+
+            string COLUMNS = "*";
+            string TABLENAME = "assets";
+
+            string assetFilter = "";
+            if (!string.IsNullOrEmpty(assetFilter)) assetFilter = " AND [id]='" + assetId + "'";
+
+            string query = null;
+
+            // Create query
+            if (from > DateTime.MinValue && to > DateTime.MinValue)
+            {
+                string qf = "SELECT {0} FROM [{1}] WHERE [device_id] = '{2}'{3} AND [timestamp] >= '{4}' AND [timestamp] <= '{5}'";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, from.ToUnixTime(), to.ToUnixTime());
+            }
+            else if (from > DateTime.MinValue && count > 0)
+            {
+                string qf = "SELECT TOP {5} {0} FROM [{1}] WHERE [device_id] = '{2}'{3} AND [timestamp] >= '{4}'";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, from.ToUnixTime(), count);
+            }
+            else if (to > DateTime.MinValue && count > 0)
+            {
+                string qf = "SELECT TOP {5} {0} FROM [{1}] WHERE [device_id] = '{2}'{3} AND [timestamp] <= '{4}'";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, to.ToUnixTime(), count);
+            }
+            else if (from > DateTime.MinValue)
+            {
+                string qf = "SELECT {0} FROM [{1}] WHERE [device_id] = '{2}'{3} AND [timestamp] >= '{4}'";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, from.ToUnixTime(), count);
+            }
+            else if (to > DateTime.MinValue)
+            {
+                string qf = "SELECT {0} FROM [{1}] WHERE [device_id] = '{2}'{3} AND [timestamp] <= '{4}'";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, to.ToUnixTime(), count);
+            }
+            else if (count > 0)
+            {
+                string qf = "SELECT TOP {4} {0} FROM [{1}] WHERE [device_id] = '{2}'{3} ORDER BY [timestamp] DESC";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, count);
+            }
+            else if (at > DateTime.MinValue)
+            {
+                string qf = "SELECT {0} FROM [{1}] WHERE [device_id] = '{2}'{3} AND [timestamp] = '{4}'";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, at.ToUnixTime());
+            }
+            else
+            {
+                string qf = "SELECT {0} FROM [{1}] WHERE [device_id] = '{2}'{3}";
+                query = string.Format(qf, COLUMNS, TABLENAME, deviceId, assetFilter, at.ToUnixTime());
+            }
+
+            if (!string.IsNullOrEmpty(query)) assets = ReadList<AssetDefinition>(query);
+
+            return assets;
+        }
+
+
+        /// <summary>
         /// Read the ComponentDefinitions for the specified Agent Instance Id from the database
         /// </summary>
         public List<ComponentDefinition> ReadComponents(string deviceId, long agentInstanceId)
@@ -430,6 +493,50 @@ namespace mod_db_sql
                         command.Parameters.AddWithValue("@bufferSize", d.BufferSize);
                         command.Parameters.AddWithValue("@testIndicator", d.TestIndicator ?? Convert.DBNull);
                         command.Parameters.AddWithValue("@timestamp", d.Timestamp.ToUnixTime());
+
+                        success = Write(command);
+                    }
+
+                    if (!success) break;
+                }
+
+                return success;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Write AssetDefintions to the database
+        /// </summary>
+        public bool Write(List<AssetDefinitionData> definitions)
+        {
+            if (!definitions.IsNullOrEmpty())
+            {
+                string COLUMNS = "[device_id], [id], [timestamp], [agent_instance_id], [type], [xml]";
+                string VALUES = "(@deviceId, @id, @timestamp, @agentInstanceId, @type, @xml)";
+                string WHERE = "[device_id]=@deviceId AND [id]=@id AND [timestamp]=@timestamp";
+
+                string QUERY_FORMAT = "IF NOT EXISTS(SELECT * FROM [assets] WHERE {0}) BEGIN {1} END";
+                string INSERT_FORMAT = "INSERT INTO [assets] ({0}) VALUES {1}";
+
+                var insert = string.Format(INSERT_FORMAT, COLUMNS, VALUES);
+                var query = string.Format(QUERY_FORMAT, WHERE, insert);
+
+                bool success = false;
+
+                for (var i = 0; i < definitions.Count; i++)
+                {
+                    var d = definitions[i];
+
+                    using (var command = new SqlCommand(query))
+                    {
+                        command.Parameters.AddWithValue("@deviceId", d.DeviceId ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@id", d.Id ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@timestamp", d.Timestamp.ToUnixTime());
+                        command.Parameters.AddWithValue("@agentInstanceId", d.AgentInstanceId);
+                        command.Parameters.AddWithValue("@type", d.Type ?? Convert.DBNull);
+                        command.Parameters.AddWithValue("@xml", d.Xml ?? Convert.DBNull);
 
                         success = Write(command);
                     }
