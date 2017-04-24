@@ -34,7 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\dataserver.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\dataserver-menu-icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>TrakHound.DataServer.Menu.Program</StartupObject>
@@ -65,10 +65,6 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="TrakHound-Api, Version=1.8.2.2408, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TrakHound-Api.1.8.2.2408\lib\net40\TrakHound-Api.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SystemTrayMenu.cs" />
@@ -106,6 +102,21 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\dataserver.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\dataserver-status-running.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\dataserver-status-stopped.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\dataserver-menu-icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TrakHound-Api\src\TrakHound-Api.csproj">
+      <Project>{721bf90b-e72e-4fdf-bb06-3945e25e6dbc}</Project>
+      <Name>TrakHound-Api</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

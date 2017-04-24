@@ -65,13 +65,17 @@ namespace TrakHound.DataServer.Menu
                     // Update Menu Status Label
                     SystemTrayMenu.SetHeader(status.ToString());
 
+                    // Set NotifyIcon Icon
+                    if (status == ServiceControllerStatus.Running) SystemTrayMenu.NotifyIcon.Icon = Properties.Resources.dataserver_status_running;
+                    else SystemTrayMenu.NotifyIcon.Icon = Properties.Resources.dataserver_status_stopped;
+
                     // Create Notification
                     if (status == ServiceControllerStatus.Running || status == ServiceControllerStatus.Stopped)
                     {
                         var notifyIcon = SystemTrayMenu.NotifyIcon;
                         notifyIcon.BalloonTipTitle = "TrakHound DataServer";
                         notifyIcon.BalloonTipText = status.ToString();
-                        notifyIcon.Icon = Properties.Resources.dataserver;
+                        notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
                         notifyIcon.ShowBalloonTip(5000);
                     }
                 }

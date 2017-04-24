@@ -39,7 +39,7 @@ namespace TrakHound.DataServer.Menu
 
             // Set NotifyIcon Properties
             NotifyIcon.Text = "TrakHound DataServer";
-            NotifyIcon.Icon = Properties.Resources.dataserver;
+            NotifyIcon.Icon = Properties.Resources.dataserver_status_stopped;
             NotifyIcon.ContextMenuStrip = menu;
             NotifyIcon.Visible = true;
         }
