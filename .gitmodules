@@ -1,0 +1,3 @@
+[submodule "src/Modules"]
+	path = src/Modules
+	url = https://github.com/TrakHound/TrakHound-Database-Modules
