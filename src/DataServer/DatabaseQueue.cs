@@ -121,7 +121,11 @@ namespace TrakHound.DataServer
                     if (success && !connections.IsNullOrEmpty())
                     {
                         if (Database.Write(connections)) sentIds.AddRange(GetSentDataIds(connections.ToList<IStreamData>(), "Connections"));
-                        else success = false;
+                        else
+                        {
+                            log.Info(string.Format("Error writing {0} {1}", connections.Count, "Connections"));
+                            success = false;
+                        }
                     }
 
                     // Write AgentDefintions to Database
@@ -129,7 +133,11 @@ namespace TrakHound.DataServer
                     if (success && !agents.IsNullOrEmpty())
                     {
                         if (Database.Write(agents)) sentIds.AddRange(GetSentDataIds(agents.ToList<IStreamData>(), "Agents"));
-                        else success = false;
+                        else
+                        {
+                            log.Info(string.Format("Error writing {0} {1}", agents.Count, "Agents"));
+                            success = false;
+                        }
                     }
 
                     // Write AssetDefintions to Database
@@ -137,7 +145,11 @@ namespace TrakHound.DataServer
                     if (success && !assets.IsNullOrEmpty())
                     {
                         if (Database.Write(assets)) sentIds.AddRange(GetSentDataIds(assets.ToList<IStreamData>(), "Assets"));
-                        else success = false;
+                        else
+                        {
+                            log.Info(string.Format("Error writing {0} {1}", assets.Count, "Assets"));
+                            success = false;
+                        }
                     }
 
                     // Write ComponentDefinitions to Database
@@ -145,7 +157,11 @@ namespace TrakHound.DataServer
                     if (success && !components.IsNullOrEmpty())
                     {
                         if (Database.Write(components)) sentIds.AddRange(GetSentDataIds(components.ToList<IStreamData>(), "Components"));
-                        else success = false;
+                        else
+                        {
+                            log.Info(string.Format("Error writing {0} {1}", components.Count, "Components"));
+                            success = false;
+                        }
                     }
 
                     // Write DataItems to Database
@@ -153,7 +169,11 @@ namespace TrakHound.DataServer
                     if (success && !dataItems.IsNullOrEmpty())
                     {
                         if (Database.Write(dataItems)) sentIds.AddRange(GetSentDataIds(dataItems.ToList<IStreamData>(), "DataItems"));
-                        else success = false;
+                        else
+                        {
+                            log.Info(string.Format("Error writing {0} {1}", dataItems.Count, "DataItems"));
+                            success = false;
+                        }
                     }
 
                     // Write DeviceDefinitions to Database
@@ -161,7 +181,11 @@ namespace TrakHound.DataServer
                     if (success && !devices.IsNullOrEmpty())
                     {
                         if (Database.Write(devices)) sentIds.AddRange(GetSentDataIds(devices.ToList<IStreamData>(), "Devices"));
-                        else success = false;
+                        else
+                        {
+                            log.Info(string.Format("Error writing {0} {1}", devices.Count, "Devices"));
+                            success = false;
+                        }
                     }
 
                     // Write Samples to Database
@@ -195,7 +219,11 @@ namespace TrakHound.DataServer
                         newSamples.AddRange(samples.FindAll(o => o.StreamDataType == StreamDataType.ARCHIVED_SAMPLE));
 
                         if (Database.Write(newSamples)) sentIds.AddRange(GetSentDataIds(newSamples.ToList<IStreamData>(), "Samples"));
-                        else success = false;
+                        else
+                        {
+                            log.Info(string.Format("Error writing {0} {1}", newSamples.Count, "Samples"));
+                            success = false;
+                        }
                     }
 
                     // Write Statuses to Database
@@ -212,7 +240,11 @@ namespace TrakHound.DataServer
                         }
 
                         if (Database.Write(newStatuses)) sentIds.AddRange(GetSentDataIds(newStatuses.ToList<IStreamData>(), "Status"));
-                        else success = false;
+                        else
+                        {
+                            log.Info(string.Format("Error writing {0} {1}", newStatuses.Count, "Statuses"));
+                            success = false;
+                        }
                     }
 
 
