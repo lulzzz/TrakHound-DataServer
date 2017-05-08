@@ -190,6 +190,18 @@ namespace TrakHound.DataServer.Streaming
             if (stop != null) stop.Set();
         }
 
+        public void Abort()
+        {
+            try
+            {
+                if (thread != null) thread.Abort();
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
         private void Worker()
         {
             do
@@ -247,6 +259,8 @@ namespace TrakHound.DataServer.Streaming
                     }
 
                 } while (!stop.WaitOne(0, true));
+
+                listener.Stop();
             }
             catch (SocketException ex)
             {
