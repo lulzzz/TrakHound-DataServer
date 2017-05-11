@@ -83,7 +83,7 @@ namespace TrakHound.DataServer.Streaming
             LoadConfiguration(config);
 
             healthStatusTimer = new Timers.Timer();
-            healthStatusTimer.Interval = 300000; // Five Minutes
+            healthStatusTimer.Interval = 60000; // One Minute
             healthStatusTimer.Elapsed += HealthStatusTimer_Elapsed;
             healthStatusTimer.Start();
         }
